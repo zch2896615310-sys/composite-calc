@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结构计算工具箱</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-border: rgba(59, 130, 246, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Canvas Background */
+        #cityCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Content */
+        .home-container {
+            z-index: 10;
+            text-align: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .home-header {
+            margin-bottom: 80px;
+            animation: fadeInDown 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .home-header h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .home-header p {
+            color: var(--primary);
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .cards-container {
+            display: flex;
+            gap: 50px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .tool-card {
+            width: 340px;
+            height: 260px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            backdrop-filter: blur(8px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            /* overflow: hidden; Removed to allow dropdown to show */
+            overflow: visible;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            /* Added to clip background since overflow is visible */
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+            /* Ensure it doesn't block interactions */
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(59, 130, 246, 0.3);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon-svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 25px;
+            stroke: var(--text-muted);
+            stroke-width: 1.5;
+            transition: all 0.4s ease;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.2));
+        }
+
+        .tool-card:hover .card-icon-svg {
+            stroke: var(--primary);
+            transform: scale(1.1) rotate(-5deg);
+            filter: drop-shadow(0 0 15px var(--primary-glow));
+        }
+
+        .tool-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+
+        .tool-card:hover .tool-name {
+            color: #fff;
+        }
+
+        .tool-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .tool-card:hover .tool-desc {
+            color: #cbd5e1;
+        }
+
+        /* Intro Animation */
+        .cards-container>a {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .cards-container>a:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .cards-container>a:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Dropdown Styles */
+        .tool-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            margin-top: 15px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .tool-card:hover .tool-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 12px;
+            transition: all 0.2s;
+            text-align: left;
+            border: 1px solid transparent;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(59, 130, 246, 0.15);
+            color: #fff;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Disabled State */
+        .tool-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.6);
+        }
+
+        .tool-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--card-border);
+            background: var(--card-bg);
+        }
+
+        .tool-card.disabled::before {
+            display: none;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Dynamic Canvas Background -->
+    <canvas id="cityCanvas"></canvas>
+
+    <div class="home-container">
+        <header class="home-header">
+            <h1>结构计算工具箱</h1>
+            <p>Structural Calculation Toolbox</p>
+        </header>
+
+        <div class="cards-container">
+            <!-- Card 1: Stone -->
+            <a href="石材钢架计算.html" class="tool-card">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm12-7H4v7h12v-7z" />
+                    <path d="M4 15h12" />
+                    <path d="M8 4v11" />
+                </svg>
+                <div class="tool-name">石材钢架计算</div>
+                <div class="tool-desc">Stone Steel Frame Calculation</div>
+            </a>
+
+            <!-- Card 2: Ceiling -->
+            <a href="天花钢架转化层计算.html" class="tool-card">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                    <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                    <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                <div class="tool-name">天花钢架转换层计算</div>
+                <div class="tool-desc">Ceiling Steel Frame Transfer Layer</div>
+            </a>
+
+            <!-- Card 3: Railing (Placeholder) -->
+            <div class="tool-card disabled">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M21 8H3" />
+                    <path d="M4 21V8" />
+                    <path d="M8 8v13" />
+                    <path d="M12 8v13" />
+                    <path d="M16 8v13" />
+                    <path d="M20 21V8" />
+                </svg>
+                <div class="tool-name">栏杆扶手计算</div>
+                <div class="tool-desc">Railing & Handrail (Coming Soon)</div>
+            </div>
+
+            <!-- Card 4: Other (Dropdown) -->
+            <div class="tool-card" style="cursor: default;">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                <div class="tool-name">其他计算模块</div>
+                <div class="tool-desc">Other Calculation Modules</div>
+
+                <!-- Dropdown Menu -->
+                <div class="tool-dropdown">
+                    <a href="复合材料应力分配计算3.8.html" class="dropdown-item">
+                        ⬡ 复合材料计算
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('cityCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+        let buildings = [];
+
+        // Configuration
+        const BUILDING_COUNT = 60;
+        const PARTICLE_COUNT = 150;
+        const COLOR_BG_TOP = '#0f172a';
+        const COLOR_BG_BOTTOM = '#1e3a8a';
+
+        // Cyberpunk / Futuristic Palette
+        const COLOR_BUILDING_FILL = 'rgba(15, 23, 42, 0.4)';
+        const COLOR_BUILDING_STROKE = 'rgba(56, 189, 248, 0.3)';
+        const COLOR_PARTICLE = 'rgba(14, 165, 233, 0.5)';
+        // Warm & Cool light palette
+        const LIGHT_COLORS = [
+            'rgba(56, 189, 248, 1)',  // Light Blue
+            'rgba(251, 191, 36, 1)',  // Amber/Gold
+            'rgba(14, 165, 233, 1)',  // Sky Blue
+            'rgba(245, 158, 11, 1)'   // Orange
+        ];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initBuildings();
+        }
+
+        class Building {
+            constructor() {
+                this.w = 30 + Math.random() * 60; // Narrower
+                this.h = 50 + Math.random() * (height * 0.4); // Shorter: Max 40% height
+                this.x = Math.random() * (width - this.w);
+                this.y = height;
+                this.depth = Math.random(); // 0 = far, 1 = near
+                // Far buildings are darker/smaller/slower
+                this.speedFactor = 0.02 * (0.5 + this.depth);
+
+                this.lights = [];
+                // Create random windows/lights grid
+                const rows = Math.floor(this.h / 15);
+                const cols = Math.floor(this.w / 10);
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (Math.random() > 0.7) {
+                            this.lights.push({
+                                x: 4 + c * 10,
+                                y: 10 + r * 15,
+                                blinkSpeed: 0.001 + Math.random() * 0.002,
+                                phase: Math.random() * Math.PI * 2,
+                                color: LIGHT_COLORS[Math.floor(Math.random() * LIGHT_COLORS.length)] // Random color
+                            });
+                        }
+                    }
+                }
+            }
+
+            draw(ctx, mouseX) {
+                // Parallax effect: Moving mouse right moves buildings left
+                // Closer buildings move more
+                const parallaxX = (mouseX - width / 2) * this.speedFactor * -2;
+
+                const drawX = this.x + parallaxX;
+                const drawY = height - this.h;
+
+                // Glow effect
+                ctx.shadowBlur = this.depth * 10;
+                ctx.shadowColor = COLOR_BUILDING_STROKE;
+
+                // Body
+                ctx.fillStyle = COLOR_BUILDING_FILL;
+                ctx.fillRect(drawX, drawY, this.w, this.h);
+
+                // Edges
+                ctx.strokeStyle = `rgba(56, 189, 248, ${0.2 + this.depth * 0.3})`;
+                ctx.lineWidth = 1 + this.depth;
+                ctx.strokeRect(drawX, drawY, this.w, this.h);
+
+                // No Antenna (Clean interface)
+
+                ctx.shadowBlur = 0;
+
+                const time = Date.now();
+                this.lights.forEach(l => {
+                    const brightness = (Math.sin(time * l.blinkSpeed + l.phase) + 1) / 2;
+                    const alpha = 0.1 + brightness * 0.7;
+
+                    // Parse RGB from rgba string to apply new alpha
+                    const rgb = l.color.substring(0, l.color.lastIndexOf(','));
+                    ctx.fillStyle = `${rgb}, ${alpha})`;
+
+                    ctx.fillRect(drawX + l.x, drawY + l.y, 4, 8);
+                });
+            }
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height - height; // Start above
+                this.speed = 2 + Math.random() * 3;
+                this.len = 20 + Math.random() * 50;
+                this.alpha = 0.1 + Math.random() * 0.5;
+            }
+
+            update() {
+                this.y += this.speed;
+                if (this.y > height) this.reset();
+            }
+
+            draw(ctx) {
+                ctx.beginPath();
+                const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.len);
+                grad.addColorStop(0, `rgba(56, 189, 248, 0)`);
+                grad.addColorStop(1, `rgba(56, 189, 248, ${this.alpha})`);
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = 1;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.len);
+                ctx.stroke();
+            }
+        }
+
+        function initBuildings() {
+            buildings = [];
+            for (let i = 0; i < BUILDING_COUNT; i++) {
+                buildings.push(new Building());
+            }
+            // Sort by depth so far buildings draw first
+            buildings.sort((a, b) => a.depth - b.depth);
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        let mouseX = width / 2;
+        let mouseY = height / 2;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animate() {
+            // Clear
+            ctx.fillStyle = COLOR_BG_TOP;
+            // Background Gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, height);
+            grad.addColorStop(0, '#020617'); // Very dark blue/black
+            grad.addColorStop(1, '#172554'); // Deep blue
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Grid Floor (Perspective)
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            // Vertical lines - slightly moving with mouse
+            const gridOffset = (mouseX - width / 2) * 0.05;
+            for (let x = -width; x <= width * 2; x += 100) {
+                // Perspective lines fan out from center
+                ctx.moveTo(x + gridOffset, height);
+                ctx.lineTo(width / 2 + (x - width / 2) * 0.1, 0);
+            }
+            ctx.stroke();
+
+            // Buildings
+            buildings.forEach(b => b.draw(ctx, mouseX));
+
+            // Data Rain
+            particles.forEach(p => {
+                p.update();
+                p.draw(ctx);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initParticles();
+        animate();
+    </script>
+</body>
+
+</html>
