@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天花转换层螺栓拉拔计算书（通用版）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add html-docx-js and FileSaver.js for real DOCX export -->
+    <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Modal Styles */
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+        }
+
+        dialog {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 0;
+            max-width: 90vw;
+            width: 500px;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af', // Blue 800
+                        secondary: '#3b82f6', // Blue 500
+                        accent: '#eab308', // Yellow 500
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                        'pulse-soft': 'pulseSoft 2s infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        pulseSoft: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.8' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        .input-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .input-group input,
+        .input-group select {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            /* Standard CSS replacement for Tailwind ring utilities */
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #3b82f6;
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        /* Smooth transitions for calculations */
+        .number-transition {
+            transition: all 0.3s ease;
+        }
+
+        .calc-step {
+            /* border-left: 3px solid #e5e7eb;  Removed default border, handeld by hover classes */
+            padding-left: 0.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .calc-step:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .calc-step:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .calc-step:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .calc-step.highlight {
+            border-left-color: #3b82f6;
+            background-color: #eff6ff;
+            border-radius: 0 0.375rem 0.375rem 0;
+            padding: 0.5rem 0.5rem 0.5rem 1rem;
+        }
+
+        /* Board Card Styles */
+        .board-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .board-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 0.4rem;
+            border-radius: 50%;
+            transition: all 0.2s;
+            opacity: 0.6;
+        }
+
+        .remove-btn:hover {
+            background-color: #fee2e2;
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .shadow-lg {
+                box-shadow: none;
+                border: none;
+            }
+
+            .max-w-6xl {
+                max-width: 100%;
+            }
+
+            .animate-fade-in-up,
+            .calc-step,
+            .board-card {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Editable Title Style */
+        #reportTitle {
+            transition: all 0.2s;
+            border: 1px dashed transparent;
+            border-radius: 4px;
+            padding: 0 8px;
+        }
+
+        #reportTitle:hover,
+        #reportTitle:focus {
+            border-color: #cbd5e1;
+            background-color: #f8fafc;
+            outline: none;
+            cursor: text;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Header -->
+        <div class="lg:col-span-12 mb-2 flex justify-between items-center animate-fade-in-up">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800"><i
+                        class="fas fa-calculator text-primary mr-2"></i>天花转换层螺栓拉拔计算书</h1>
+                <p class="text-gray-500 text-sm mt-1">通用计算工具</p>
+            </div>
+            <!-- Export Button -->
+            <button onclick="exportToWord()"
+                class="no-print bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-blue-200 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center">
+                <i class="fas fa-file-word mr-2"></i>导出Word
+            </button>
+            <button onclick="clearHistory()"
+                class="no-print ml-4 text-xs text-gray-400 hover:text-red-500 underline transition-colors"
+                title="清除历史记录并重置">
+                <i class="fas fa-history mr-1"></i>重置
+            </button>
+        </div>
+
+        <!-- Project Bar -->
+        <div class="lg:col-span-12 mb-4 bg-white p-3 rounded-lg shadow-sm border border-blue-100 flex flex-col md:flex-row items-center justify-between animate-fade-in-up"
+            style="animation-delay: 0.05s;">
+            <div class="flex items-center space-x-3 w-full md:w-auto mb-2 md:mb-0">
+                <label class="text-sm font-medium text-gray-600 min-w-fit"><i
+                        class="fas fa-folder text-yellow-500 mr-1"></i>项目名称:</label>
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="projectName" value="未命名项目" onchange="projectManager.updateName(this.value)"
+                        class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow">
+                    <span id="saveStatus"
+                        class="absolute right-2 top-1.5 text-xs text-green-500 opacity-0 transition-opacity"><i
+                            class="fas fa-check"></i></span>
+                </div>
+            </div>
+            <div class="flex space-x-2 w-full md:w-auto justify-end">
+                <button onclick="projectManager.save()"
+                    class="no-print bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center">
+                    <i class="fas fa-save mr-1.5"></i>保存项目
+                </button>
+                <button onclick="projectManager.openModal()"
+                    class="no-print bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center">
+                    <i class="fas fa-folder-open mr-1.5"></i>管理项目
+                </button>
+                <button onclick="projectManager.createNew()"
+                    class="no-print bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 text-sm font-medium py-1.5 px-3 rounded-md transition-colors flex items-center"
+                    title="新建空白项目">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Left Column: Inputs -->
+        <div
+            class="lg:col-span-5 space-y-6 no-print lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto pr-2">
+
+            <!-- Section 1: Ceiling Loads -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-fade-in-up"
+                style="animation-delay: 0.1s;">
+                <h2
+                    class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <span
+                            class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">1</span>
+                        吊顶荷载参数
+                    </span>
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Additional Components -->
+                    <div class="input-group">
+                        <label class="block mb-1 text-gray-700">附加构件重量 (kg)</label>
+                        <input type="number" id="additionalWeight" value="160"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700"
+                            oninput="calculate()">
+                        <p class="text-xs text-gray-400 mt-1">如GRG构件、大型灯具等总重</p>
+                    </div>
+
+                    <!-- Dynamic Boards Section -->
+                    <div class="border-t border-gray-100 pt-4 mt-2">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="block font-medium text-gray-700">板材信息</label>
+                            <button onclick="addBoard()"
+                                class="text-sm bg-green-50 text-green-600 px-3 py-1.5 rounded-full border border-green-200 hover:bg-green-100 hover:shadow-md transition-all flex items-center">
+                                <i class="fas fa-plus mr-1"></i>添加板材
+                            </button>
+                        </div>
+
+                        <div id="boardsContainer">
+                            <!-- Board items will be injected here via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Live Load -->
+                    <div class="input-group border-t border-gray-100 pt-4">
+                        <label class="block mb-1 text-gray-700">上人活荷载 (kg)</label>
+                        <input type="number" id="liveLoad" value="160"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700"
+                            oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Section 2: 轻钢龙骨荷载 (Light Steel Keel Load) -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-fade-in-up"
+                style="animation-delay: 0.15s;">
+                <h2
+                    class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <span
+                            class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">2</span>
+                        轻钢龙骨荷载
+                    </span>
+                    <button onclick="addKeel()"
+                        class="text-sm bg-green-50 text-green-600 px-3 py-1.5 rounded-full border border-green-200 hover:bg-green-100 hover:shadow-md transition-all flex items-center">
+                        <i class="fas fa-plus mr-1"></i>添加龙骨
+                    </button>
+                </h2>
+                <div id="keelsContainer" class="space-y-4">
+                    <!-- Keel items injected here -->
+                </div>
+            </div>
+
+            <!-- Section 3: 吊杆荷载 (Hanger Load) -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-fade-in-up"
+                style="animation-delay: 0.18s;">
+                <h2
+                    class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <span
+                            class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">3</span>
+                        吊杆荷载计算
+                    </span>
+                    <button onclick="addHanger()"
+                        class="text-sm bg-green-50 text-green-600 px-3 py-1.5 rounded-full border border-green-200 hover:bg-green-100 hover:shadow-md transition-all flex items-center">
+                        <i class="fas fa-plus mr-1"></i>添加吊杆
+                    </button>
+                </h2>
+                <div id="hangersContainer" class="space-y-4">
+                    <!-- Hanger items injected here -->
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-fade-in-up"
+                style="animation-delay: 0.2s;">
+                <h2
+                    class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <span
+                            class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">4</span>
+                        转换层钢架参数
+                    </span>
+                    <button onclick="addSteelFrame()"
+                        class="text-sm bg-green-50 text-green-600 px-3 py-1.5 rounded-full border border-green-200 hover:bg-green-100 hover:shadow-md transition-all flex items-center">
+                        <i class="fas fa-plus mr-1"></i>添加钢架
+                    </button>
+                </h2>
+                <!-- Dynamic Steel Container -->
+                <div id="steelFramesContainer" class="space-y-4">
+                </div>
+            </div>
+
+            <!-- Section 5: Bolts & Safety -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-fade-in-up"
+                style="animation-delay: 0.3s;">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 flex items-center">
+                    <span
+                        class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">5</span>
+                    节点与系数
+                </h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label class="block mb-1">整体受力点数</label>
+                            <input type="number" id="supportPoints" value="4"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700"
+                                oninput="calculate()">
+                        </div>
+                        <div class="input-group">
+                            <label class="block mb-1">单点螺栓数</label>
+                            <input type="number" id="boltsPerPoint" value="2"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700"
+                                oninput="calculate()">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="input-group">
+                            <label class="block mb-1">荷载分项系数</label>
+                            <input type="number" id="loadFactor" value="1.3" step="0.1"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700"
+                                oninput="calculate()">
+                        </div>
+                        <div class="input-group">
+                            <label class="block mb-1">拉拔安全系数</label>
+                            <input type="number" id="safetyFactor" value="2.0" step="0.1"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700"
+                                oninput="calculate()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Results (Calculation Book Style) -->
+        <div class="lg:col-span-7">
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 h-full animate-fade-in-up"
+                style="animation-delay: 0.4s;" id="printArea">
+
+                <!-- Title Block -->
+                <div class="text-center border-b-2 border-gray-800 pb-4 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900" contenteditable="true" id="reportTitle"
+                        title="点击此处修改标题">天花转换层螺栓受力计算书</h2>
+                </div>
+
+                <!-- Step 1 -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3"><i
+                            class="fas fa-cube text-blue-500 mr-2"></i>一、荷载统计</h3>
+
+                    <div class="calc-step">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">1. 附加构件自重 (G<sub>add</sub>):</span>
+                            <span class="font-mono font-bold number-transition" id="res_add">1.60 kN</span>
+                        </div>
+                        <div class="text-xs text-gray-400 font-mono mt-1" id="f_add">160kg × 10N/kg / 1000</div>
+                    </div>
+
+                    <!-- Dynamic Board Results -->
+                    <div id="boardResultsContainer">
+                        <!-- Dynamic content -->
+                    </div>
+
+                    <div class="calc-step mt-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">3. 上人活荷载 (Q<sub>live</sub>):</span>
+                            <span class="font-mono font-bold number-transition" id="res_live">1.60 kN</span>
+                        </div>
+                        <div class="text-xs text-gray-400 font-mono mt-1" id="f_live">160kg × 10N/kg / 1000</div>
+                    </div>
+
+                    <div id="g1ExtraContainer">
+                        <!-- Dynamic Keel/Hanger Summary -->
+                    </div>
+
+                    <div class="calc-step highlight">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">吊顶层标准荷载合计 (G1<sub>标</sub>):</span>
+                            <span class="font-mono text-xl font-bold text-blue-700 number-transition" id="res_g1">3.36
+                                kN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Keels -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3"><i
+                            class="fas fa-bars text-blue-500 mr-2"></i>二、龙骨荷载</h3>
+                    <div id="keelResultsContainer"></div>
+                </div>
+
+                <!-- Step 3: Hangers -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3"><i
+                            class="fas fa-link text-blue-500 mr-2"></i>三、吊杆受力</h3>
+                    <div id="hangerResultsContainer"></div>
+                </div>
+
+                <!-- Step 4 (Renumbered from 3) -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3"><i
+                            class="fas fa-layer-group text-blue-500 mr-2"></i>四、转换层及组合荷载</h3>
+
+                    <div id="steelResultsContainer">
+                        <!-- Dynamic Steel Results -->
+                    </div>
+
+                    <div class="calc-step">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">2. 总标准荷载 (G<sub>总标</sub>):</span>
+                            <span class="font-mono font-bold number-transition" id="res_total_std">4.02 kN</span>
+                        </div>
+                        <div class="text-xs text-gray-400 font-mono mt-1">G1<sub>标</sub> + G<sub>steel</sub></div>
+                    </div>
+
+                    <div class="calc-step highlight">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">总设计荷载 (G<sub>总设</sub>):</span>
+                            <span class="font-mono text-xl font-bold text-blue-700 number-transition"
+                                id="res_total_des">5.22 kN</span>
+                        </div>
+                        <div class="text-xs text-gray-500 font-mono mt-1 text-right">G<sub>总标</sub> × <span
+                                id="val_factor">1.3</span> (荷载分项系数)</div>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3"><i
+                            class="fas fa-anchor text-blue-500 mr-2"></i>五、螺栓受力分析</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div
+                            class="bg-gray-50 p-3 rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                            <div class="text-xs text-gray-500 mb-1">单点受力 (<span id="txt_points">4</span>个支点)</div>
+                            <div class="font-mono font-bold text-gray-800 number-transition" id="res_point_load">1.31 kN
+                            </div>
+                        </div>
+                        <div
+                            class="bg-gray-50 p-3 rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                            <div class="text-xs text-gray-500 mb-1">单颗螺栓受力 (每点<span id="txt_bolts">2</span>个)</div>
+                            <div class="font-mono font-bold text-gray-800 number-transition" id="res_bolt_load">0.65 kN
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                        <div>
+                            <span
+                                class="block text-sm text-yellow-800 font-bold uppercase tracking-wider">设计推荐拉拔值</span>
+                            <span class="text-xs text-yellow-600">单颗螺栓受力 × 安全系数 <span id="val_safety">2.0</span></span>
+                        </div>
+                        <div class="text-3xl font-bold text-yellow-700 font-mono number-transition" id="res_required">
+                            1.31 kN</div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="border-t border-gray-200 pt-4 mt-8 flex justify-between text-xs text-gray-400">
+                    <span>计算日期:
+                        <script>document.write(new Date().toLocaleDateString())</script>
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        // --- Data & Constants ---
+        // Updated density options derived from N/m2 table (g=10)
+        // Formula: kg/m2 = N/m2 / 10
+        const MATERIAL_GROUPS = [
+            {
+                groupName: "石膏板 (通用)",
+                options: [
+                    { label: '9.5mm 石膏板 (9.5 kg/m²)', value: 9.5 },
+                    { label: '12.0mm 石膏板 (12.0 kg/m²)', value: 12.0 },
+                    { label: '15.0mm 石膏板 (15.0 kg/m²)', value: 15.0 },
+                    { label: '18.0mm 石膏板 (18.0 kg/m²)', value: 18.0 },
+                    { label: '21.0mm 石膏板 (21.0 kg/m²)', value: 21.0 },
+                    { label: '25.0mm 石膏板 (25.0 kg/m²)', value: 25.0 }
+                ]
+            },
+            {
+                groupName: "单层铝板 (按表5.2.2)",
+                options: [
+                    { label: '2.5mm 单层铝板 (6.75 kg/m²)', value: 6.75 }, // 67.5/10
+                    { label: '3.0mm 单层铝板 (8.10 kg/m²)', value: 8.10 }, // 81.0/10
+                    { label: '4.0mm 单层铝板 (11.20 kg/m²)', value: 11.20 } // 112.0/10
+                ]
+            },
+            {
+                groupName: "铝塑复合板 (按表5.2.2)",
+                options: [
+                    { label: '4.0mm 铝塑复合板 (5.50 kg/m²)', value: 5.50 }, // 55.0/10
+                    { label: '6.0mm 铝塑复合板 (7.36 kg/m²)', value: 7.36 } // 73.6/10
+                ]
+            },
+            {
+                groupName: "蜂窝铝板(铝箔芯) (按表5.2.2)",
+                options: [
+                    { label: '10.0mm 蜂窝铝板 (5.30 kg/m²)', value: 5.30 }, // 53.0/10
+                    { label: '15.0mm 蜂窝铝板 (7.00 kg/m²)', value: 7.00 }, // 70.0/10
+                    { label: '20.0mm 蜂窝铝板 (7.40 kg/m²)', value: 7.40 } // 74.0/10
+                ]
+            },
+            {
+                groupName: "不锈钢板 (按表5.2.2)",
+                options: [
+                    { label: '1.5mm 不锈钢板 (11.78 kg/m²)', value: 11.78 }, // 117.8/10
+                    { label: '2.0mm 不锈钢板 (15.70 kg/m²)', value: 15.70 }, // 157.0/10
+                    { label: '2.5mm 不锈钢板 (19.63 kg/m²)', value: 19.63 }, // 196.3/10
+                    { label: '3.0mm 不锈钢板 (23.55 kg/m²)', value: 23.55 } // 235.5/10
+                ]
+            },
+            {
+                groupName: "其他",
+                options: [
+                    { label: '自定义...', value: 0 }
+                ]
+            }
+        ];
+
+        let boards = [
+            { id: 1, name: '板材1', length: 1.0, width: 0.82, area: 0.82, layers: 2, density: 9.5, densityMode: 'standard' }
+        ];
+        let nextBoardId = 2;
+
+        // --- Steel Frame Management ---
+        const STEEL_PRESETS = [
+            { label: '自定义 (Custom)', value: 'custom', weight: 0 },
+            { label: 'L50×50×5 角钢 (3.77 kg/m)', value: 'L50*50*5', weight: 3.77 },
+            { label: 'L50×50×4 角钢 (3.06 kg/m)', value: 'L50*50*4', weight: 3.06 }
+        ];
+
+        let steelFrames = [
+            { id: 1, model: 'L50*50*5', length: 17.4, unitWeight: 3.77, isCustom: false }
+        ];
+        let nextSteelId = 2;
+
+        // --- Keel Management ---
+        const KEEL_PRESETS = [
+            { label: '自定义 (Custom)', value: 'custom', area: 0 },
+            // Main Keels (Bearing) - Non-accessible
+            { label: 'C38×12 (承载-不上人) [T=1.0]', value: 'C38*12', area: 62.0 },
+            { label: 'C50×20 (承载-不上人) [T=0.6]', value: 'C50*20', area: 54.0 },
+            { label: 'C60×27 (承载-不上人) [T=0.6]', value: 'C60*27', area: 68.4 },
+            // Main Keels (Bearing) - Accessible (CS Series)
+            { label: 'CS45×15 (承载-上人) [T=1.2]', value: 'CS45*15', area: 90.0 },
+            { label: 'CS50×15 (承载-上人) [T=1.2]', value: 'CS50*15', area: 96.0 },
+            { label: 'CS60×20 (承载-上人) [T=1.2]', value: 'CS60*20', area: 120.0 },
+            { label: 'CS60×24 (承载-上人) [T=1.2]', value: 'CS60*24', area: 129.6 },
+            { label: 'CS60×27 (承载-上人) [T=1.2]', value: 'CS60*27', area: 136.8 },
+            { label: 'CS60×27 (承载-上人) [T=1.5]', value: 'CS60*27_1.5', area: 171.0 },
+            // Secondary Keels
+            { label: 'C50×19 (覆面) [T=0.5]', value: 'C50*19', area: 44.0 },
+            { label: 'C50×20 (覆面) [T=0.6]', value: 'C50*20_sec', area: 54.0 },
+            { label: 'C60×27 (覆面) [T=0.6]', value: 'C60*27_sec', area: 68.4 },
+            // Edge
+            { label: 'DU27×11 (收边)', value: 'DU27', area: 49.0 }, // Approx
+            { label: 'DU30×20 (收边)', value: 'DU30', area: 70.0 }  // Approx
+        ];
+
+        let keels = [
+            { id: 1, model: 'C50*20', area: 54.0, density: 7850, length: 10, isCustom: false }
+        ];
+        let nextKeelId = 2;
+
+        // --- Hanger Management ---
+        const HANGER_PRESETS = [
+            { label: '自定义 (Custom)', value: 'custom', area: 0 },
+            { label: 'M6 吊杆 (φ6)', value: 'M6', area: 28.3, density: 7850 },
+            { label: 'M8 吊杆 (φ8)', value: 'M8', area: 50.3, density: 7850 },
+            { label: 'M10 吊杆 (φ10)', value: 'M10', area: 78.5, density: 7850 },
+            { label: 'M12 吊杆 (φ12)', value: 'M12', area: 113.1, density: 7850 }
+        ];
+
+        let hangers = [
+            { id: 1, model: 'M8', area: 50.3, len: 1.0, density: 7850, points: 1, bolts: 1, safety: 2.0, isCustom: false }
+        ];
+        let nextHangerId = 2;
+
+        function renderKeels() {
+            const container = document.getElementById('keelsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            keels.forEach(keel => {
+                const card = document.createElement('div');
+                card.className = 'board-card relative bg-gray-50 border border-gray-200 p-3 rounded-md mb-2';
+
+                let removeBtn = '';
+                if (keels.length > 1) {
+                    removeBtn = `<i class="fas fa-trash remove-btn" onclick="removeKeel(${keel.id})" title="删除此龙骨"></i>`;
+                }
+
+                let optionsHtml = '';
+                KEEL_PRESETS.forEach(opt => {
+                    const selected = (!keel.isCustom && keel.model === opt.value) || (keel.isCustom && opt.value === 'custom') ? 'selected' : '';
+                    optionsHtml += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+                });
+
+                const customClass = keel.isCustom ? 'block' : 'none';
+                const areaReadonly = keel.isCustom ? '' : 'readonly';
+                // Calculate unit weight for display: kg/m = area(mm2) * density(kg/m3) / 1,000,000
+                const unitWeight = (keel.area * keel.density) / 1000000;
+
+                card.innerHTML = `
+                    ${removeBtn}
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="input-group">
+                             <label class="block mb-1 text-xs text-gray-500">龙骨型号</label>
+                             <select class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white mb-1" onchange="changeKeelPreset(${keel.id}, this)">
+                                ${optionsHtml}
+                             </select>
+                             <div style="display: ${customClass};" class="animate-fade-in-up">
+                                <input type="text" value="${keel.model}" placeholder="输入型号" class="w-full border border-blue-300 bg-blue-50 rounded px-2 py-1.5 text-sm" onchange="updateKeel(${keel.id}, 'model', this.value)">
+                             </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">截面(mm²)</label>
+                                <input type="number" step="0.1" value="${keel.area}" ${areaReadonly} class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateKeel(${keel.id}, 'area', this.value)">
+                             </div>
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">密度(kg/m³)</label>
+                                <input type="number" value="${keel.density}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateKeel(${keel.id}, 'density', this.value)">
+                             </div>
+                              <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">总长(m)</label>
+                                <input type="number" step="0.1" value="${keel.length}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateKeel(${keel.id}, 'length', this.value)">
+                             </div>
+                        </div>
+                         <div class="text-xs text-gray-400 text-right mt-1">
+                            单重: <span class="font-bold text-gray-600" id="keel_weight_${keel.id}">${unitWeight.toFixed(3)}</span> kg/m
+                         </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addKeel() {
+            keels.push({ id: nextKeelId++, model: 'C50*20', area: 54.0, density: 7850, length: 10, isCustom: false });
+            renderKeels();
+            calculate();
+        }
+
+        function removeKeel(id) {
+            if (keels.length <= 1) return;
+            keels = keels.filter(k => k.id !== id);
+            renderKeels();
+            calculate();
+        }
+
+        function updateKeel(id, field, value) {
+            const k = keels.find(i => i.id === id);
+            if (k) {
+                if (field === 'model') k.model = value;
+                else k[field] = parseFloat(value) || 0;
+                calculate();
+
+                // Optimized: Only update the specific DOM element if needed, instead of full re-render
+                if (field !== 'model' && !k.isCustom) {
+                    // Pre-defined keels shouldn't change area/density usually, but if they do (custom mode logic flow):
+                }
+
+                // Update unit weight display specifically
+                const unitWeight = (k.area * k.density) / 1000000;
+                const weightSpan = document.getElementById(`keel_weight_${id}`);
+                if (weightSpan) weightSpan.innerText = unitWeight.toFixed(3);
+
+                // No renderKeels() here to preserve focus
+            }
+        }
+
+        function changeKeelPreset(id, el) {
+            const k = keels.find(i => i.id === id);
+            if (el.value === 'custom') {
+                k.isCustom = true;
+                k.model = '自定义龙骨';
+                k.area = 0;
+            } else {
+                k.isCustom = false;
+                k.model = el.value;
+                const p = KEEL_PRESETS.find(x => x.value === el.value);
+                if (p) k.area = p.area;
+            }
+            renderKeels();
+            renderKeels();
+            calculate();
+        }
+
+        function renderHangers() {
+            const container = document.getElementById('hangersContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            hangers.forEach(h => {
+                const card = document.createElement('div');
+                card.className = 'board-card relative bg-gray-50 border border-gray-200 p-3 rounded-md mb-2';
+
+                let removeBtn = '';
+                if (hangers.length > 1) {
+                    removeBtn = `<i class="fas fa-trash remove-btn" onclick="removeHanger(${h.id})" title="删除此吊杆"></i>`;
+                }
+
+                let optionsHtml = '';
+                HANGER_PRESETS.forEach(opt => {
+                    const selected = (!h.isCustom && h.model === opt.value) || (h.isCustom && opt.value === 'custom') ? 'selected' : '';
+                    optionsHtml += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+                });
+
+                const customClass = h.isCustom ? 'block' : 'none';
+                const areaReadonly = h.isCustom ? '' : 'readonly';
+
+                card.innerHTML = `
+                    ${removeBtn}
+                    <div class="grid grid-cols-1 gap-2">
+                         <div class="input-group">
+                             <label class="block mb-1 text-xs text-gray-500">吊杆型号</label>
+                             <select class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white mb-1" onchange="changeHangerPreset(${h.id}, this)">
+                                ${optionsHtml}
+                             </select>
+                             <div style="display: ${customClass};" class="animate-fade-in-up">
+                                <input type="text" value="${h.model}" placeholder="输入型号" class="w-full border border-blue-300 bg-blue-50 rounded px-2 py-1.5 text-sm" onchange="updateHanger(${h.id}, 'model', this.value)">
+                             </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">截面(mm²)</label>
+                                <input type="number" step="0.1" value="${h.area}" ${areaReadonly} class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateHanger(${h.id}, 'area', this.value)">
+                             </div>
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">长度(m)</label>
+                                <input type="number" step="0.1" value="${h.len}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateHanger(${h.id}, 'len', this.value)">
+                             </div>
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">密度</label>
+                                <input type="number" value="${h.density}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateHanger(${h.id}, 'density', this.value)">
+                             </div>
+                        </div>
+                         <div class="grid grid-cols-3 gap-2 border-t border-gray-200 pt-2 mt-1">
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">受力点数</label>
+                                <input type="number" value="${h.points}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateHanger(${h.id}, 'points', this.value)">
+                             </div>
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">螺栓数量</label>
+                                <input type="number" value="${h.bolts}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateHanger(${h.id}, 'bolts', this.value)">
+                             </div>
+                             <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">安全系数</label>
+                                <input type="number" step="0.1" value="${h.safety}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateHanger(${h.id}, 'safety', this.value)">
+                             </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addHanger() {
+            hangers.push({ id: nextHangerId++, model: 'M8', area: 50.3, len: 1.0, density: 7850, points: 1, bolts: 1, safety: 2.0, isCustom: false });
+            renderHangers();
+            calculate();
+        }
+
+        function removeHanger(id) {
+            if (hangers.length <= 1) return;
+            hangers = hangers.filter(h => h.id !== id);
+            renderHangers();
+            calculate();
+        }
+
+        function updateHanger(id, field, value) {
+            const h = hangers.find(i => i.id === id);
+            if (h) {
+                if (field === 'model') h.model = value;
+                else h[field] = parseFloat(value) || 0;
+                calculate();
+                // Removed renderHangers() to prevent input focus loss
+            }
+        }
+
+        function changeHangerPreset(id, el) {
+            const h = hangers.find(i => i.id === id);
+            if (el.value === 'custom') {
+                h.isCustom = true;
+                h.model = '自定义吊杆';
+                h.area = 0;
+            } else {
+                h.isCustom = false;
+                h.model = el.value;
+                const p = HANGER_PRESETS.find(x => x.value === el.value);
+                if (p) {
+                    h.area = p.area;
+                    h.density = p.density;
+                }
+            }
+            renderHangers();
+            calculate();
+        }
+
+        function renderSteelFrames() {
+            const container = document.getElementById('steelFramesContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            steelFrames.forEach((steel, index) => {
+                const card = document.createElement('div');
+                card.className = 'board-card relative bg-gray-50 border border-gray-200 p-3 rounded-md mb-2';
+
+                let removeBtn = '';
+                if (steelFrames.length > 1) {
+                    removeBtn = `<i class="fas fa-trash remove-btn" onclick="removeSteelFrame(${steel.id})" title="删除此钢架"></i>`;
+                }
+
+                // Build Preset Options
+                let optionsHtml = '';
+                STEEL_PRESETS.forEach(opt => {
+                    const selected = (!steel.isCustom && steel.model === opt.value) || (steel.isCustom && opt.value === 'custom') ? 'selected' : '';
+                    optionsHtml += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+                });
+
+                const modelInputDisplay = steel.isCustom ? 'block' : 'none';
+
+                card.innerHTML = `
+                    ${removeBtn}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="input-group">
+                             <label class="block mb-1 text-xs text-gray-500">钢架型号 (Model)</label>
+                             <select class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white mb-2" onchange="changeSteelPreset(${steel.id}, this)">
+                                ${optionsHtml}
+                             </select>
+                             <div style="display: ${modelInputDisplay};" class="animate-fade-in-up">
+                                <input type="text" value="${steel.model}" placeholder="输入型号名称" class="w-full border border-blue-300 bg-blue-50 rounded px-2 py-1.5 text-sm mb-1" onchange="updateSteelFrame(${steel.id}, 'model', this.value)">
+                             </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">钢架总长 (m)</label>
+                                <input type="number" step="0.1" value="${steel.length}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateSteelFrame(${steel.id}, 'length', this.value)">
+                            </div>
+                            <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">米重 (kg/m)</label>
+                                <input type="number" step="0.01" value="${steel.unitWeight}" ${!steel.isCustom ? 'readonly class="w-full border border-gray-200 bg-gray-100 rounded px-2 py-1.5 text-sm text-gray-500"' : 'class="w-full border border-yellow-300 bg-yellow-50 rounded px-2 py-1.5 text-sm"'} oninput="updateSteelFrame(${steel.id}, 'unitWeight', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addSteelFrame() {
+            steelFrames.push({
+                id: nextSteelId++,
+                model: 'L50*50*5',
+                length: 10.0,
+                unitWeight: 3.77,
+                isCustom: false
+            });
+            renderSteelFrames();
+            calculate();
+        }
+
+        function removeSteelFrame(id) {
+            if (steelFrames.length <= 1) return;
+            steelFrames = steelFrames.filter(s => s.id !== id);
+            renderSteelFrames();
+            calculate();
+        }
+
+        function updateSteelFrame(id, field, value) {
+            const steel = steelFrames.find(s => s.id === id);
+            if (steel) {
+                if (field === 'model') steel.model = value;
+                else steel[field] = parseFloat(value) || 0;
+                calculate();
+            }
+        }
+
+        function changeSteelPreset(id, selectEl) {
+            const steel = steelFrames.find(s => s.id === id);
+            const val = selectEl.value;
+            if (val === 'custom') {
+                steel.isCustom = true;
+                steel.model = '自定义钢架';
+                steel.unitWeight = 0;
+            } else {
+                steel.isCustom = false;
+                steel.model = val;
+                const preset = STEEL_PRESETS.find(p => p.value === val);
+                steel.unitWeight = preset ? preset.weight : 0;
+            }
+            renderSteelFrames();
+            calculate();
+        }
+
+        // --- Board Management ---
+        function renderBoards() {
+            const container = document.getElementById('boardsContainer');
+            container.innerHTML = '';
+
+            boards.forEach((board, index) => {
+                const card = document.createElement('div');
+                card.className = 'board-card relative';
+
+                // Remove Button
+                let removeBtn = '';
+                if (boards.length > 1) {
+                    removeBtn = `<i class="fas fa-trash remove-btn" onclick="removeBoard(${board.id})" title="删除此板材"></i>`;
+                }
+
+                // Build Options HTML with Groups
+                let optionsHtml = '';
+                MATERIAL_GROUPS.forEach(group => {
+                    let groupOptions = '';
+                    group.options.forEach(opt => {
+                        const selected = (board.density === opt.value && board.densityMode === 'standard') || (opt.value === 0 && board.densityMode === 'custom') ? 'selected' : '';
+                        groupOptions += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
+                    });
+                    optionsHtml += `<optgroup label="${group.groupName}">${groupOptions}</optgroup>`;
+                });
+
+                // Visibility of custom input
+                const customDisplay = board.densityMode === 'custom' ? 'block' : 'none';
+
+                card.innerHTML = `
+                    ${removeBtn}
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="input-group">
+                            <label class="block mb-1 text-xs text-gray-500">板材名称</label>
+                            <input type="text" value="${board.name}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" onchange="updateBoard(${board.id}, 'name', this.value)">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">长 (m)</label>
+                                <input type="number" step="0.01" value="${board.length}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateBoard(${board.id}, 'length', this.value)">
+                            </div>
+                            <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">宽 (m)</label>
+                                <input type="number" step="0.01" value="${board.width}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateBoard(${board.id}, 'width', this.value)">
+                            </div>
+                            <div class="input-group">
+                                <label class="block mb-1 text-xs text-gray-500">层数</label>
+                                <input type="number" value="${board.layers}" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" oninput="updateBoard(${board.id}, 'layers', this.value)">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="block mb-1 text-xs text-gray-500">面密度选择 (按g=10换算)</label>
+                            <select class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white mb-2" onchange="changeDensitySelect(${board.id}, this)">
+                                ${optionsHtml}
+                            </select>
+                            <div style="display: ${customDisplay};" class="relative animate-fade-in-up" style="animation-duration: 0.2s;">
+                                <input type="number" step="0.01" value="${board.density}" placeholder="输入面密度" class="w-full border border-yellow-300 bg-yellow-50 rounded px-2 py-1.5 text-sm" oninput="updateBoard(${board.id}, 'density', this.value)">
+                                <span class="absolute right-2 top-1 text-xs text-gray-400">kg/m²</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addBoard() {
+            boards.push({
+                id: nextBoardId++,
+                name: `板材${boards.length + 1}`,
+                length: 1.0,
+                width: 1.0,
+                area: 1.0,
+                layers: 1,
+                density: 9.5,
+                densityMode: 'standard'
+            });
+            renderBoards();
+            calculate();
+        }
+
+        function removeBoard(id) {
+            if (boards.length <= 1) return;
+            boards = boards.filter(b => b.id !== id);
+            renderBoards();
+            calculate();
+        }
+
+        function updateBoard(id, field, value) {
+            const board = boards.find(b => b.id === id);
+            if (board) {
+                if (field === 'name') {
+                    board.name = value;
+                } else if (field === 'length' || field === 'width') {
+                    board[field] = parseFloat(value) || 0;
+                    board.area = board.length * board.width;
+                } else {
+                    board[field] = parseFloat(value) || 0;
+                }
+                calculate();
+                // Removed renderBoards() to prevent input focus loss
+            }
+        }
+
+        function changeDensitySelect(id, selectEl) {
+            const board = boards.find(b => b.id === id);
+            const val = parseFloat(selectEl.value);
+            if (val === 0) {
+                board.densityMode = 'custom';
+            } else {
+                board.densityMode = 'standard';
+                board.density = val;
+            }
+            renderBoards();
+            renderKeels();
+            calculate();
+        }
+
+        // --- Main Calculation ---
+        function calculate() {
+            // Global Inputs
+            const addKg = parseFloat(document.getElementById('additionalWeight').value) || 0;
+            const liveKg = parseFloat(document.getElementById('liveLoad').value) || 0;
+            const points = parseFloat(document.getElementById('supportPoints').value) || 1;
+            const boltsPerPoint = parseFloat(document.getElementById('boltsPerPoint').value) || 1;
+            const k_load = parseFloat(document.getElementById('loadFactor').value) || 1.3;
+            const k_safety = parseFloat(document.getElementById('safetyFactor').value) || 2.0;
+
+            const g = 10; // Gravity
+
+            // 1. Calculate Boards
+            let totalBoardKN = 0;
+            let boardResultsHTML = '';
+
+            boards.forEach((board, index) => {
+                const weightKg = board.area * board.density * board.layers;
+                const weightKN = (weightKg * g) / 1000;
+                totalBoardKN += weightKN;
+
+                boardResultsHTML += `
+                <div class="calc-step" style="animation-delay: ${0.1 + (index * 0.05)}s;">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">2.${index + 1} ${board.name}自重:</span>
+                        <span class="font-mono font-bold number-transition">${weightKN.toFixed(2)} kN</span>
+                    </div>
+                    <div class="text-xs text-gray-400 font-mono mt-1">
+                        ${board.area}m² × ${board.density}kg/m² × ${board.layers}层 × 10N/kg / 1000
+                    </div>
+                </div>`;
+            });
+
+            // Update Board Results in DOM
+            document.getElementById('boardResultsContainer').innerHTML = boardResultsHTML;
+
+            // 2. Other Ceiling Loads
+            const addKN = (addKg * g) / 1000;
+            const liveKN = (liveKg * g) / 1000;
+
+            // Total G1 (Ceiling Standard) = Add + Boards + Live
+            let g1Std = addKN + totalBoardKN + liveKN;
+
+            // 3. Keel Calculation
+            let totalKeelKN = 0;
+            let keelResultsHTML = '';
+
+            keels.forEach((k, idx) => {
+                const w_kgm = (k.area * k.density) / 1000000;
+                const w_total_kg = w_kgm * k.length;
+                const w_KN = (w_total_kg * g) / 1000;
+                totalKeelKN += w_KN;
+
+                keelResultsHTML += `
+                 <div class="calc-step hover:bg-blue-50 transition-colors duration-200 rounded-r-lg p-2 -ml-2 border-l-4 border-transparent hover:border-blue-400 group cursor-default">
+                    <div class="flex justify-between items-center">
+                         <span class="text-gray-700 font-medium group-hover:text-blue-700 transition-colors"><i class="fas fa-angle-right text-xs mr-2 text-gray-300 group-hover:text-blue-400"></i>2.${idx + 1} ${k.model}</span>
+                         <span class="font-mono font-bold text-gray-800 group-hover:text-blue-600 transition-colors">${w_KN.toFixed(2)} kN</span>
+                    </div>
+                    <div class="ml-5 text-xs text-gray-400 font-mono mt-1 group-hover:text-gray-500 transition-colors">
+                        <span class="bg-gray-100 px-1 rounded">Formula:</span> ${k.area}mm² × ${k.density}kg/m³ ÷ 10⁶ = <span class="font-semibold text-gray-600">${w_kgm.toFixed(3)}</span> kg/m
+                    </div>
+                    <div class="ml-5 text-xs text-gray-400 font-mono mt-0.5 group-hover:text-gray-500 transition-colors">
+                        <span class="bg-gray-100 px-1 rounded">Total:</span> ${w_kgm.toFixed(3)} kg/m × ${k.length} m × 10 ÷ 1000 = <span class="font-semibold text-blue-600">${w_KN.toFixed(3)}</span> kN
+                    </div>
+                 </div>`;
+            });
+
+            // Update Keel Results in DOM
+            const keelContainer = document.getElementById('keelResultsContainer');
+            if (keelContainer) {
+                keelContainer.innerHTML = keelResultsHTML;
+                if (keels.length === 0) {
+                    keelContainer.innerHTML = '<div class="text-gray-400 text-sm italic p-2 bg-gray-50 rounded border border-dashed border-gray-200 text-center">暂无龙骨数据</div>';
+                }
+            }
+
+            // Add Keel Load to G1 Std
+            // Add Keel Load to G1 Std
+            g1Std += totalKeelKN;
+
+            // 3.5 Hanger Calculation
+            let totalHangerKN = 0;
+            let hangerResultsHTML = '';
+
+            hangers.forEach((h, idx) => {
+                const selfWeightKg = (h.area * h.len * h.density) / 1000000;
+                const selfWeightKN = (selfWeightKg * 10) / 1000;
+                const totalTypeWeightKN = selfWeightKN * h.points;
+                totalHangerKN += totalTypeWeightKN;
+
+                // Load Sharing: Assume 'points' is the number of hangers sharing the full Ceiling Load (G1Std so far)
+                // If points=1, this hanger takes ALL load.
+                const loadPerNode = (g1Std > 0) ? (g1Std / h.points) : 0;
+                // Design Load = (Standard Load) * k_load
+                const totalLoadOnHangerDes = (loadPerNode + selfWeightKN) * k_load;
+                const pullForce = (totalLoadOnHangerDes / h.bolts) * h.safety;
+
+                hangerResultsHTML += `
+                 <div class="calc-step hover:bg-yellow-50 transition-colors duration-200 rounded-lg p-2 border border-gray-100 hover:border-yellow-400 group cursor-default mb-2">
+                    <div class="flex justify-between items-center">
+                         <span class="text-gray-700 font-medium group-hover:text-yellow-700 transition-colors">3.${idx + 1} 吊杆 (${h.model})</span>
+                         <span class="font-mono font-bold text-gray-800 group-hover:text-yellow-600 transition-colors">拉拔: ${pullForce.toFixed(2)} kN</span>
+                    </div>
+                    <div class="text-xs text-gray-400 font-mono mt-1">
+                        自重: ${selfWeightKN.toFixed(3)} kN | 分摊标载: ${loadPerNode.toFixed(2)} kN | 设计放大系数: ${k_load}
+                    </div>
+                    <div class="text-xs text-gray-400 font-mono mt-0.5">
+                        <span class="bg-gray-100 px-1 rounded">Calc:</span> ((${loadPerNode.toFixed(3)} + ${selfWeightKN.toFixed(3)}) × ${k_load} ÷ ${h.bolts}) × ${h.safety} = <strong>${pullForce.toFixed(2)}</strong>
+                    </div>
+                 </div>`;
+            });
+
+            const hangerContainer = document.getElementById('hangerResultsContainer');
+            if (hangerContainer) {
+                hangerContainer.innerHTML = hangerResultsHTML;
+                if (hangers.length === 0) {
+                    hangerContainer.innerHTML = '<div class="text-gray-400 text-sm italic">无吊杆数据</div>';
+                }
+            }
+
+            // Add Hanger Weight to G1 Std for Downstream (Steel Frames)
+            g1Std += totalHangerKN;
+
+            // Append Total Summary if keels exist
+            if (keels.length > 0) {
+                keelResultsHTML += `
+                <div class="calc-step highlight" style="background:#f9fafb; border-left-color:#9ca3af; padding-left:10px;">
+                    <div class="flex justify-between">
+                        <span class="text-gray-700 font-medium">龙骨自重合计 (G<sub>keel</sub>):</span>
+                        <span class="font-mono font-bold number-transition">${totalKeelKN.toFixed(2)} kN</span>
+                    </div>
+                </div>`;
+            }
+
+            const keelResContainer = document.getElementById('keelResultsContainer');
+            if (keelResContainer) {
+                keelResContainer.innerHTML = keelResultsHTML;
+                if (keels.length === 0) {
+                    keelResContainer.innerHTML = '<div class="text-gray-400 text-sm italic p-2 bg-gray-50 rounded border border-dashed border-gray-200 text-center">暂无龙骨数据</div>';
+                }
+            }
+
+
+            // 4. Steel Frames
+            let totalSteelKN = 0;
+            let steelDetailsHTML = '';
+
+            steelFrames.forEach((steel, index) => {
+                const wKN = (steel.length * steel.unitWeight * g) / 1000;
+                totalSteelKN += wKN;
+
+                steelDetailsHTML += `
+                <div class="calc-step">
+                    <div class="flex justify-between">
+                         <span class="text-gray-600">4.${index + 1} 钢架 (${steel.model}):</span>
+                        <span class="font-mono font-bold number-transition">${wKN.toFixed(2)} kN</span>
+                    </div>
+                </div>`;
+            });
+            if (steelFrames.length > 0) {
+                steelDetailsHTML += `
+                <div class="calc-step highlight" style="background:#f9fafb; border-left-color:#9ca3af; padding-left:10px;">
+                    <div class="flex justify-between">
+                        <span class="text-gray-700 font-medium">转换层钢架自重合计 (G<sub>steel</sub>):</span>
+                        <span class="font-mono font-bold number-transition">${totalSteelKN.toFixed(2)} kN</span>
+                    </div>
+                </div>`;
+            }
+            const steelContainer = document.getElementById('steelResultsContainer');
+            if (steelContainer) steelContainer.innerHTML = steelDetailsHTML;
+
+            // 5. Totals
+            const totalStd = g1Std + totalSteelKN;
+            const totalDes = totalStd * k_load;
+
+            // 6. Bolts
+            const loadPerPoint = totalDes / points;
+            const loadPerBolt = loadPerPoint / boltsPerPoint;
+            const reqPullOut = loadPerBolt * k_safety;
+
+            // UI Updates
+            setTxt('res_add', addKN.toFixed(2) + " kN");
+            setTxt('f_add', `${addKg}kg × 10N/kg / 1000`);
+            setTxt('res_live', liveKN.toFixed(2) + " kN");
+            setTxt('f_live', `${liveKg}kg × 10N/kg / 1000`);
+
+            // 5. Populate G1 Extra Container (Keels + Hangers)
+            let g1ExtraHTML = '';
+            // 4. Keel Summary
+            if (totalKeelKN > 0) {
+                g1ExtraHTML += `
+                 <div class="calc-step mt-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">4. 龙骨自重 (G<sub>keel</sub>):</span>
+                        <span class="font-mono font-bold number-transition">${totalKeelKN.toFixed(2)} kN</span>
+                    </div>
+                    <div class="text-xs text-gray-400 font-mono mt-1">详见"二、龙骨荷载"汇总</div>
+                 </div>`;
+            }
+
+            // 5. Hanger Summary
+            if (totalHangerKN > 0) {
+                g1ExtraHTML += `
+                 <div class="calc-step mt-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">5. 吊杆自重 (G<sub>hanger</sub>):</span>
+                        <span class="font-mono font-bold number-transition">${totalHangerKN.toFixed(2)} kN</span>
+                    </div>
+                    <div class="text-xs text-gray-400 font-mono mt-1">详见"三、吊杆受力"汇总</div>
+                 </div>`;
+            }
+            const g1ExtraContainer = document.getElementById('g1ExtraContainer');
+            if (g1ExtraContainer) g1ExtraContainer.innerHTML = g1ExtraHTML;
+
+            setTxt('res_g1', g1Std.toFixed(2) + " kN");
+
+            setTxt('res_total_std', totalStd.toFixed(2) + " kN");
+            setTxt('res_total_des', totalDes.toFixed(2) + " kN");
+            setTxt('val_factor', k_load);
+
+            setTxt('txt_points', points);
+            setTxt('txt_bolts', boltsPerPoint);
+            setTxt('res_point_load', loadPerPoint.toFixed(2) + " kN");
+            setTxt('res_bolt_load', loadPerBolt.toFixed(2) + " kN");
+            setTxt('val_safety', k_safety.toFixed(1));
+            setTxt('res_required', reqPullOut.toFixed(2) + " kN");
+
+            // Save State (Auto-save on every calculation)
+            saveState();
+        }
+
+        // Helper to safely set text
+        function setTxt(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        }
+
+        // --- Export to Word (Optimized DOCX) ---
+        function exportToWord() {
+            const getTxt = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.innerText : '';
+            };
+            const date = new Date().toLocaleDateString();
+            const g = 10;
+
+            // --- Helper: Generate Fixed Table Rows ---
+            // We use a fixed layout: Title (70%) | Value (30%)
+            // Formatting: Title is left aligned, Value is right aligned.
+
+            // Build Board Rows
+            let boardRows = '';
+            boards.forEach((board, index) => {
+                const weightKg = board.area * board.density * board.layers;
+                const weightKN = (weightKg * g) / 1000;
+                boardRows += `
+                    <tr>
+                        <td class="label">1.${index + 1} ${board.name}自重:</td>
+                        <td class="value">${weightKN.toFixed(2)} kN</td>
+                    </tr>
+                    <tr><td colspan="2" class="formula">计算过程：${board.area}m² × ${board.density}kg/m² × ${board.layers}层 × 10N/kg / 1000</td></tr>
+                `;
+            });
+
+            // Build Keel Rows
+            let keelRows = '';
+            let totalKeel = 0;
+            keels.forEach((k, idx) => {
+                const w_kgm = (k.area * k.density) / 1000000;
+                const w_KN = (w_kgm * k.length * g) / 1000;
+                totalKeel += w_KN;
+
+                keelRows += `
+                    <tr>
+                        <td class="label">2.${idx + 1} 龙骨 (${k.model}):</td>
+                        <td class="value">${w_KN.toFixed(2)} kN</td>
+                    </tr>
+                    <tr><td colspan="2" class="formula">计算过程：${w_kgm.toFixed(3)}kg/m × ${k.length}m × 10N/kg / 1000</td></tr>
+                 `;
+            });
+            keelRows += `
+                <tr style="background:#f9f9f9;">
+                    <td class="label" style="font-weight:bold;">龙骨自重合计 (G<sub>keel</sub>):</td>
+                    <td class="value" style="font-weight:bold;">${totalKeel.toFixed(2)} kN</td>
+                </tr>
+            `;
+
+            // Build Steel Rows
+            let steelRows = '';
+            let totalSteel = 0;
+            steelFrames.forEach((steel, index) => {
+                const weightKN = (steel.length * steel.unitWeight * g) / 1000;
+                totalSteel += weightKN;
+                steelRows += `
+                    <tr>
+                        <td class="label">4.${index + 1} 钢架 (${steel.model}):</td>
+                        <td class="value">${weightKN.toFixed(2)} kN</td>
+                    </tr>
+                    <tr><td colspan="2" class="formula">计算过程：${steel.length}m × ${steel.unitWeight}kg/m × 10N/kg / 1000</td></tr>
+                 `;
+            });
+            steelRows += `
+                <tr style="background:#f9f9f9;">
+                    <td class="label" style="font-weight:bold;">转换层钢架自重合计 (G<sub>steel</sub>):</td>
+                    <td class="value" style="font-weight:bold;">${totalSteel.toFixed(2)} kN</td>
+                </tr>
+            `;
+
+            // Build Hanger Rows (Calculated fresh for export accuracy)
+            let hangerRows = '';
+            hangers.forEach((h, idx) => {
+                let preHangerLoad = 0;
+                const addK = (parseFloat(document.getElementById('additionalWeight').value) || 0) * 10 / 1000;
+                const liveK = (parseFloat(document.getElementById('liveLoad').value) || 0) * 10 / 1000;
+                let boardK = 0;
+                boards.forEach(b => boardK += (b.area * b.density * b.layers * 10 / 1000));
+                preHangerLoad = addK + liveK + boardK + totalKeel;
+
+                const swKg = (h.area * h.len * h.density) / 1000000;
+                const swKN = swKg * 10 / 1000;
+                const loadPerNode = preHangerLoad / h.points;
+                const k_load = parseFloat(document.getElementById('loadFactor').value) || 1.3;
+                const pull = ((loadPerNode + swKN) * k_load) / h.bolts * h.safety;
+
+                hangerRows += `
+                    <tr>
+                        <td class="label" style="font-weight:bold;">3.${idx + 1} 吊杆 (${h.model}):</td>
+                        <td class="value">${pull.toFixed(2)} kN</td>
+                    </tr>
+                    <tr><td colspan="2" class="formula">
+                        分摊标载: ${loadPerNode.toFixed(3)} kN | 自重: ${swKN.toFixed(3)} kN | 设计系数: ${k_load}<br>
+                        计算: (${loadPerNode.toFixed(2)} + ${swKN.toFixed(3)}) × ${k_load} ÷ ${h.bolts} × ${h.safety}
+                    </td></tr>
+                `;
+            });
+
+            /* Revert to "Fake DOC" (MHTML/HTML) to ensure @page CSS is respected by Word */
+            /* This is the reliable way to get A4 size + Fixed Layout from HTML source */
+            const htmlContent = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset="utf-8">
+                <title>${reportTitle}</title>
+                <!-- This XML block forces Word to use Print View -->
+                <xml>
+                 <w:WordDocument>
+                  <w:View>Print</w:View>
+                  <w:Zoom>100</w:Zoom>
+                  <w:DoNotOptimizeForBrowser/>
+                 </w:WordDocument>
+                </xml>
+                <style>
+                    /* Page Size: A4 */
+                    @page {
+                        size: 21cm 29.7cm;
+                        margin: 2.54cm;
+                        mso-page-orientation: portrait;
+                    }
+                    @page Section1 { }
+                    div.Section1 { page: Section1; }
+                    
+                    body { font-family: 'SimSun', '宋体', serif; font-size: 10.5pt; } /* 10.5pt is approx regular text size in Word */
+                    h1 { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 20px; }
+                    h2 { font-size: 14pt; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 5px; margin-top: 15px; margin-bottom: 10px; }
+                    
+                    /* Table Styles */
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        table-layout: fixed; /* Enforces column widths */
+                    }
+                    td { 
+                        padding: 4px 8px; 
+                        vertical-align: top; 
+                    }
+                    
+                    /* Column Specifics */
+                    td.label { 
+                        text-align: left; 
+                    }
+                    td.value { 
+                        text-align: right; 
+                        font-weight: bold; 
+                    }
+                    td.formula { 
+                        font-size: 9pt; 
+                        color: #555; 
+                        font-style: italic; 
+                        padding-left: 20px;
+                        padding-bottom: 8px;
+                    }
+                    
+                    .highlight { 
+                        background-color: #f0f0f0; 
+                        border: 1px solid #ddd; 
+                        padding: 10px; 
+                        margin-top: 5px; 
+                        font-weight: bold; 
+                    }
+                    .footer { margin-top: 30px; font-size: 9pt; text-align: right; color: #888; border-top: 1px solid #ddd; padding-top: 5px; }
+
+                    /* Red Box Highlight Fix: Ensure consistent indentation for item lists */
+                    .indent-1 { padding-left: 0px; }
+                </style>
+            </head>
+            <body>
+                <div class="Section1">
+                    <h1>${reportTitle}</h1>
+                    
+                    <h2>一、荷载统计</h2>
+                    <table>
+                        <colgroup>
+                            <col width="70%">
+                            <col width="30%">
+                        </colgroup>
+                        <tr>
+                            <td class="label">1. 附加构件自重 (G<sub>add</sub>):</td>
+                            <td class="value">${getTxt('res_add')}</td>
+                        </tr>
+                        <tr><td colspan="2" class="formula">计算过程：${getTxt('f_add')}</td></tr>
+                        
+                        <!-- Dynamic Boards -->
+                        ${boardRows}
+
+                        <tr>
+                            <td class="label">3. 上人活荷载 (Q<sub>live</sub>):</td>
+                            <td class="value">${getTxt('res_live')}</td>
+                        </tr>
+                        <tr><td colspan="2" class="formula">计算过程：${getTxt('f_live')}</td></tr>
+                    </table>
+                    
+                    <!-- Highlight Box -->
+                    <p class="highlight">
+                        吊顶层标准荷载合计 (含龙骨) (G1<sub>标</sub>): ${getTxt('res_g1')}
+                    </p>
+
+                    <h2>二、龙骨荷载</h2>
+                    <table>
+                        <colgroup>
+                            <col width="70%">
+                            <col width="30%">
+                        </colgroup>
+                        ${keelRows}
+                    </table>
+
+                     <h2>三、吊杆受力</h2>
+                    <table>
+                        <colgroup>
+                            <col width="70%">
+                            <col width="30%">
+                        </colgroup>
+                        ${hangerRows}
+                    </table>
+
+                    <h2>四、转换层及组合荷载</h2>
+                    <table>
+                        <colgroup>
+                            <col width="70%">
+                            <col width="30%">
+                        </colgroup>
+                        <!-- Dynamic Steel Frames -->
+                        ${steelRows}
+
+                        <tr>
+                            <td class="label">2. 总标准荷载 (G<sub>总标</sub>):</td>
+                            <td class="value">${getTxt('res_total_std')}</td>
+                        </tr>
+                        <tr><td colspan="2" class="formula">计算过程：G1<sub>标</sub> + G<sub>steel</sub></td></tr>
+                    </table>
+
+                    <p class="highlight">
+                        总设计荷载 (G<sub>总设</sub>): ${getTxt('res_total_des')}
+                        <br><span style="font-size:10pt; font-weight:normal">(荷载分项系数: ${getTxt('val_factor')})</span>
+                    </p>
+
+                    <h2>五、螺栓受力分析</h2>
+                    <table>
+                        <colgroup>
+                            <col width="70%">
+                            <col width="30%">
+                        </colgroup>
+                        <tr>
+                            <td class="label">单点受力 (共${getTxt('txt_points')}个支点):</td>
+                            <td class="value">${getTxt('res_point_load')}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">单颗螺栓受力 (每点${getTxt('txt_bolts')}个):</td>
+                            <td class="value">${getTxt('res_bolt_load')}</td>
+                        </tr>
+                    </table>
+
+                    <div style="border: 2px solid #eab308; padding: 15px; margin-top: 15px; background-color: #fefce8;">
+                        <strong>设计推荐拉拔值:</strong> <span style="font-size: 16pt; font-weight: bold; color: #a16207;">${getTxt('res_required')}</span><br>
+                        <span style="font-size: 10pt;">(安全系数 K = ${getTxt('val_safety')})</span>
+                    </div>
+
+                    <div class="footer">
+                        计算日期: ${date}
+                    </div>
+                </div>
+            </body>
+            </html>`;
+
+            // Export as .doc (Word HTML XML)
+            // This ensures the @page css is respected
+            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '天花转换层螺栓计算书.doc';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        // Initialize
+        // --- History / Persistence ---
+        const HISTORY_KEY = 'calc_history_v1';
+
+
+        function saveState() {
+            const nameEl = document.getElementById('projectName');
+            const name = nameEl ? nameEl.value : '未命名项目';
+
+            const state = {
+                globals: {
+                    additionalWeight: document.getElementById('additionalWeight').value,
+                    liveLoad: document.getElementById('liveLoad').value,
+                    supportPoints: document.getElementById('supportPoints').value,
+                    boltsPerPoint: document.getElementById('boltsPerPoint').value,
+                    loadFactor: document.getElementById('loadFactor').value,
+                    safetyFactor: document.getElementById('safetyFactor').value
+                },
+                lists: {
+                    boards: boards,
+                    keels: keels,
+                    hangers: hangers,
+                    steelFrames: steelFrames
+                },
+                meta: {
+                    projectName: name,
+                    projectId: projectManager.currentId,
+                    lastAutoSave: Date.now()
+                }
+            };
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(HISTORY_KEY);
+            if (!saved) return;
+
+            try {
+                const state = JSON.parse(saved);
+
+                // Restore Globals
+                if (state.globals) {
+                    document.getElementById('additionalWeight').value = state.globals.additionalWeight || 160;
+                    document.getElementById('liveLoad').value = state.globals.liveLoad || 160;
+                    document.getElementById('supportPoints').value = state.globals.supportPoints || 4;
+                    document.getElementById('boltsPerPoint').value = state.globals.boltsPerPoint || 2;
+                    document.getElementById('loadFactor').value = state.globals.loadFactor || 1.3;
+                    document.getElementById('safetyFactor').value = state.globals.safetyFactor || 2.0;
+                }
+
+                // Restore Lists
+                if (state.lists) {
+                    boards = state.lists.boards || [];
+                    keels = state.lists.keels || [];
+                    hangers = state.lists.hangers || [];
+                    steelFrames = state.lists.steelFrames || [];
+
+                    // Re-derive ID counters to prevent collisions
+                    nextBoardId = boards.length > 0 ? Math.max(...boards.map(x => x.id)) + 1 : 1;
+                    nextKeelId = keels.length > 0 ? Math.max(...keels.map(x => x.id)) + 1 : 1;
+                    nextHangerId = hangers.length > 0 ? Math.max(...hangers.map(x => x.id)) + 1 : 1;
+                    nextSteelId = steelFrames.length > 0 ? Math.max(...steelFrames.map(x => x.id)) + 1 : 1;
+                }
+
+                // Render all
+                renderBoards();
+                renderKeels();
+                renderHangers();
+                renderSteelFrames();
+
+            } catch (e) {
+                console.error("Failed to load history", e);
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('确定要重置所有数据恢复默认吗？')) {
+                localStorage.removeItem(HISTORY_KEY);
+                location.reload();
+            }
+        }
+
+        // --- Project Management ---
+        const PROJECTS_KEY = 'calc_projects_v1';
+
+        const projectManager = {
+            currentId: null, // If null, it's a new or unsaved/default state
+
+            init: function () {
+                const saved = localStorage.getItem(HISTORY_KEY);
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.meta && parsed.meta.projectId) {
+                            this.currentId = parsed.meta.projectId;
+                            this.updateNameInput(parsed.meta.projectName || '未命名项目');
+                        }
+                    } catch (e) { }
+                }
+            },
+
+            updateName: function (name) {
+                saveState();
+            },
+
+            updateNameInput: function (name) {
+                const el = document.getElementById('projectName');
+                if (el) el.value = name;
+            },
+
+            save: function () {
+                const name = document.getElementById('projectName').value || '未命名项目';
+                const now = Date.now();
+
+                const state = {
+                    globals: {
+                        additionalWeight: document.getElementById('additionalWeight').value,
+                        liveLoad: document.getElementById('liveLoad').value,
+                        supportPoints: document.getElementById('supportPoints').value,
+                        boltsPerPoint: document.getElementById('boltsPerPoint').value,
+                        loadFactor: document.getElementById('loadFactor').value,
+                        safetyFactor: document.getElementById('safetyFactor').value
+                    },
+                    lists: {
+                        boards: boards,
+                        keels: keels,
+                        hangers: hangers,
+                        steelFrames: steelFrames
+                    },
+                    meta: {
+                        projectName: name,
+                        projectId: this.currentId || now
+                    }
+                };
+
+                if (!this.currentId) {
+                    this.currentId = now;
+                    state.meta.projectId = now;
+                }
+
+                let projects = this.getAll();
+                const idx = projects.findIndex(p => p.id == this.currentId);
+
+                const projectEntry = {
+                    id: this.currentId,
+                    name: name,
+                    updatedAt: now,
+                    data: state
+                };
+
+                if (idx >= 0) projects[idx] = projectEntry;
+                else projects.push(projectEntry);
+
+                localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+                saveState();
+
+                const status = document.getElementById('saveStatus');
+                status.style.opacity = '1';
+                setTimeout(() => status.style.opacity = '0', 2000);
+
+                alert(`项目 "${name}" 已保存！`);
+            },
+
+            createNew: function () {
+                if (confirm('确定要新建一个空白项目吗？当前未保存的修改可能会丢失。建议先保存。')) {
+                    this.currentId = null;
+                    localStorage.removeItem(HISTORY_KEY);
+                    location.reload();
+                }
+            },
+
+            load: function (id) {
+                const projects = this.getAll();
+                const p = projects.find(x => x.id == id);
+                if (p) {
+                    localStorage.setItem(HISTORY_KEY, JSON.stringify(p.data));
+                    location.reload();
+                }
+                this.closeModal();
+            },
+
+            delete: function (id) {
+                if (!confirm('确定要删除此项目吗？')) return;
+                let projects = this.getAll();
+                projects = projects.filter(p => p.id != id);
+                localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+                this.renderList();
+
+                if (this.currentId == id) {
+                    this.currentId = null;
+                    document.getElementById('projectName').value += ' (已删除)';
+                }
+            },
+
+            getAll: function () {
+                try {
+                    return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]');
+                } catch (e) { return []; }
+            },
+
+            openModal: function () {
+                const dialog = document.getElementById('projectModal');
+                if (dialog) {
+                    this.renderList();
+                    dialog.showModal();
+                }
+            },
+
+            closeModal: function () {
+                const dialog = document.getElementById('projectModal');
+                if (dialog) dialog.close();
+            },
+
+            renderList: function () {
+                const container = document.getElementById('projectList');
+                const projects = this.getAll();
+
+                if (projects.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无已保存项目</div>';
+                    return;
+                }
+
+                projects.sort((a, b) => b.updatedAt - a.updatedAt);
+
+                let html = '<div class="space-y-2">';
+                projects.forEach(p => {
+                    const date = new Date(p.updatedAt).toLocaleString();
+                    const activeClass = (p.id == this.currentId) ? 'border-l-4 border-blue-500 bg-blue-50' : 'hover:bg-gray-50';
+                    html += `
+                        <div class="flex justify-between items-center p-3 border border-gray-100 rounded shadow-sm ${activeClass}">
+                            <div>
+                                <div class="font-bold text-gray-800">${p.name}</div>
+                                <div class="text-xs text-gray-400">${date}</div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="projectManager.load(${p.id})" class="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 bg-white border border-blue-200 rounded">
+                                    <i class="fas fa-folder-open"></i> 打开
+                                </button>
+                                <button onclick="projectManager.delete(${p.id})" class="text-red-500 hover:text-red-700 text-sm px-2 py-1 bg-white border border-red-200 rounded">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+        };
+
+        // --- History / Persistence Overrides ---
+        // Modify saveState to include meta
+        function saveState() {
+            const nameEl = document.getElementById('projectName');
+            const name = nameEl ? nameEl.value : '未命名项目';
+
+            const state = {
+                globals: {
+                    additionalWeight: document.getElementById('additionalWeight').value,
+                    liveLoad: document.getElementById('liveLoad').value,
+                    supportPoints: document.getElementById('supportPoints').value,
+                    boltsPerPoint: document.getElementById('boltsPerPoint').value,
+                    loadFactor: document.getElementById('loadFactor').value,
+                    safetyFactor: document.getElementById('safetyFactor').value
+                },
+                lists: {
+                    boards: boards,
+                    keels: keels,
+                    hangers: hangers,
+                    steelFrames: steelFrames
+                },
+                meta: {
+                    projectName: name,
+                    projectId: projectManager.currentId,
+                    lastAutoSave: Date.now()
+                }
+            };
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(state));
+        }
+
+        // Initialize
+        loadState(); // Load first
+        if (boards.length === 0 && keels.length === 0) {
+            // First time run or empty save, add default items? 
+            // The lists were initialized with defaults in code variables. 
+            // If loadState() found nothing, those defaults remain.
+            // If loadState() found empty lists, then we respect empty lists.
+        } else {
+            // Re-render handled by loadState
+            // If loadState didn't run (no save), we still need initial render of code defaults
+            if (!localStorage.getItem(HISTORY_KEY)) {
+                renderBoards();
+                renderSteelFrames();
+                renderKeels();
+                renderHangers();
+            }
+        }
+
+        projectManager.init(); // Initialize Project Manager (reads meta)
+
+        calculate(); // Initial Calc
+    </script>
+    <!-- Project Modal -->
+    <dialog id="projectModal" class="animate-fade-in-up">
+        <div class="bg-white rounded-lg overflow-hidden">
+            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-list text-blue-600 mr-2"></i>项目列表</h3>
+                <button onclick="projectManager.closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-4 max-h-96 overflow-y-auto" id="projectList">
+                <!-- Projects injected here -->
+                <div class="text-center text-gray-400 py-8">暂无已保存项目</div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 text-right">
+                <button onclick="projectManager.closeModal()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium">关闭</button>
+            </div>
+        </div>
+    </dialog>
+</body>
+
+</html>

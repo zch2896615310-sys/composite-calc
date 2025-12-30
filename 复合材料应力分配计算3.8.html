@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全能复合材料应力计算核心 V3.8 (Pro Doc Style)</title>
+    <style>
+        :root {
+            /* "Bold & Minimalist" Palette */
+            --bg-body: #ffffff;
+            --bg-panel: #ffffff;
+            --text-main: #000000;
+            --text-muted: #555555;
+            
+            /* Colors */
+            --neon-blue: #0033ff; /* Klein Blue */
+            --neon-pink: #ff3300; /* International Orange */
+            --neon-green: #00a651; /* Kelly Green */
+            --neon-yellow: #ffcc00; /* Safety Yellow */
+            
+            --border-color: #000000;
+            --shadow-hard: 4px 4px 0px #000000;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f0f0f0; }
+        ::-webkit-scrollbar-thumb { background: #000; border: 2px solid #fff; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: pageFadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes pageFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 4px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        h1 { margin: 0; font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+        .sub-header { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; font-weight: 500; }
+        .badge { font-size: 0.7rem; color: #fff; background: var(--text-main); padding: 4px 8px; font-weight: bold; margin-left: 10px; vertical-align: middle;}
+
+        .header-buttons { display: flex; gap: 15px; }
+        .header-buttons button {
+            background: #fff; color: var(--text-main); border: 2px solid var(--border-color); 
+            padding: 10px 20px; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; cursor: pointer;
+            box-shadow: 2px 2px 0px #000; transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .header-buttons button:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px #000; }
+        .header-buttons button:active { transform: translate(0, 0); box-shadow: 0 0 0 #000; }
+        .header-buttons button.primary { background: var(--neon-blue); color: #fff; border-color: #000; }
+
+        /* Animations */
+        @keyframes valPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: var(--neon-blue); }
+            100% { transform: scale(1); }
+        }
+        .val-anim { animation: valPop 0.3s ease-out; }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Temporary Message */
+        #temp-message {
+            position: fixed; top: 20px; right: 20px; background: var(--neon-yellow); color: #000;
+            padding: 15px 20px; font-weight: bold; z-index: 1001; border: 2px solid #000; box-shadow: 4px 4px 0 #000; display: none;
+        }
+
+        /* Mode Switcher */
+        .mode-tabs { display: flex; margin-bottom: 30px; border: 2px solid var(--border-color); }
+        .mode-btn {
+            flex: 1; background: #fff; border: none; border-right: 2px solid var(--border-color);
+            color: var(--text-muted); padding: 15px; cursor: pointer; font-weight: 700; 
+            transition: background 0.2s; text-transform: uppercase; font-size: 0.9rem;
+        }
+        .mode-btn:last-child { border-right: none; }
+        .mode-btn:hover { background: #f0f0f0; color: #000; }
+        .mode-btn.active { background: var(--text-main); color: #fff; }
+
+        .main-grid { display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .cyber-card {
+            background: var(--bg-panel); border: 2px solid var(--border-color); padding: 25px; 
+            box-shadow: var(--shadow-hard); position: relative; display: flex; flex-direction: column;
+        }
+
+        .input-section { display: none; animation: slideInRight 0.3s forwards; }
+        .input-section.active { display: block; }
+
+        .input-group { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .input-group:last-child { border-bottom: none; }
+        
+        .input-group-title { 
+            font-size: 1.1rem; 
+            color: var(--text-main); 
+            text-transform: uppercase; 
+            font-weight: 900; 
+            margin-bottom: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        .input-group-title.simple-title { justify-content: flex-start; gap: 10px; }
+
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
+
+        .input-wrapper {
+            display: flex; align-items: center; background: #fff; border: 2px solid #ddd;
+            padding: 0 10px; height: 42px; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrapper:focus-within { border-color: var(--text-main); box-shadow: 2px 2px 0 rgba(0,0,0,0.1); }
+        
+        .input-prefix { font-weight: 600; font-size: 0.8rem; color: var(--text-main); margin-right: 5px; min-width: 40px; }
+        .input-suffix { font-size: 0.75rem; color: #888; margin-left: 5px; user-select: none; }
+        
+        input[type="number"] {
+            background: transparent; border: none; color: var(--text-main); flex: 1; width: 100%; 
+            font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.1rem; text-align: right; outline: none;
+        }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Layer Controls */
+        .layer-card {
+            border: 1px solid #eee; padding: 10px; margin-bottom: 10px; background: #fafafa;
+            animation: slideInRight 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        .layer-card.is-base { border-left: 4px solid var(--neon-green); }
+        .layer-control-btn { background: none; border: none; cursor: pointer; color: #999; font-weight: bold; padding: 5px; }
+        .layer-control-btn:hover { color: var(--neon-pink); }
+        .layer-control-btn.active { color: var(--neon-green); pointer-events: none; }
+        .btn-add-layer {
+            width: 100%; padding: 12px; background: #fff; border: 2px dashed #ccc; color: #555;
+            font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s;
+        }
+        .btn-add-layer:hover { border-color: var(--neon-blue); color: var(--neon-blue); border-style: solid; }
+
+        /* Visualization */
+        .viz-container {
+            flex: 1; min-height: 550px; background: #fdfdfd; border: 2px solid var(--border-color); 
+            position: relative; overflow: hidden; cursor: grab;
+        }
+        .viz-container:active { cursor: grabbing; }
+        .viz-bg {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: linear-gradient(#f0f2f5 1px, transparent 1px), linear-gradient(90deg, #f0f2f5 1px, transparent 1px);
+            background-size: 20px 20px; pointer-events: none;
+        }
+
+        .zoom-controls {
+            position: absolute; bottom: 20px; right: 20px; display: flex; flex-direction: column; 
+            border: 2px solid #000; background: #fff; box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        }
+        .zoom-btn {
+            width: 40px; height: 40px; background: #fff; border: none; border-bottom: 1px solid #eee;
+            color: #000; cursor: pointer; font-weight: bold; font-size: 1.2rem; transition: background 0.2s;
+            display: flex; justify-content: center; align-items: center; padding: 0; line-height: 1;
+        }
+        .zoom-btn:hover { background: var(--text-main); color: #fff; }
+
+        /* Dashboard */
+        .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+        .stat-box {
+            background: #fff; border: 2px solid #000; padding: 15px; text-align: center;
+            box-shadow: 3px 3px 0 #eee; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-box:hover { transform: translateY(-2px); box-shadow: 3px 3px 0 var(--neon-blue); border-color: var(--neon-blue); }
+        .stat-val { font-size: 1.4rem; font-weight: 900; font-family: 'Helvetica Neue', sans-serif; margin: 8px 0; display: inline-block; }
+        .stat-label { font-size: 0.7rem; color: #666; text-transform: uppercase; font-weight: 600; }
+
+        .c-blue { color: var(--neon-blue); }
+        .c-pink { color: var(--neon-pink); }
+        .c-green { color: var(--neon-green); }
+        .c-yellow { color: #b8860b; }
+
+        /* Layer Result Table */
+        #multi-res-container {
+            margin-top: 20px; border-top: 2px solid #000; padding-top: 15px;
+            animation: slideInRight 0.4s forwards;
+        }
+        .layer-res-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
+        .layer-res-table th { background: #000; color: #fff; padding: 10px; text-align: left; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; }
+        .layer-res-table td { border-bottom: 1px solid #eee; padding: 10px; font-family: 'Courier New', monospace; font-weight: bold; }
+        .layer-res-table tr:last-child td { border-bottom: none; }
+        .val-pos { color: var(--neon-pink); } /* Tensile */
+        .val-neg { color: var(--neon-blue); } /* Compressive */
+
+        details { margin-top: 30px; color: #444; border: 2px solid #eee; padding: 20px; background: #fff; }
+        summary { cursor: pointer; color: #000; font-weight: bold; margin-bottom: 10px; outline: none; }
+
+        /* Modal & Reports */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); backdrop-filter: grayscale(100%); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #fff; border: 4px solid #000; width: 90%; max-width: 850px; max-height: 90vh; overflow-y: auto; padding: 40px; box-shadow: 10px 10px 0 rgba(0,0,0,0.2); animation: modalEnter 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+        @keyframes modalEnter { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
+        .modal-header h2 { margin: 0; font-weight: 900; font-size: 1.8rem; }
+        .modal-close { background: none; border: none; font-size: 2rem; cursor: pointer; transition: 0.2s; line-height: 1; }
+        .modal-close:hover { color: var(--neon-pink); transform: rotate(90deg); }
+
+        /* --- PRO REPORT STYLING (Word Doc Style) --- */
+        .report-content { font-family: 'Times New Roman', 'SimSun', serif; color: #000; line-height: 1.6; font-size: 12pt; }
+        
+        /* Headings */
+        .report-content h1 { font-size: 18pt; text-align: center; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px;}
+        .report-content h2 { font-size: 14pt; font-weight: bold; margin-top: 25px; margin-bottom: 10px; border-left: 6px solid #000; padding-left: 10px; background: #f0f0f0; }
+        .report-content h3 { font-size: 12pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px; }
+        
+        /* Text */
+        .report-content p { margin-bottom: 10px; text-align: justify; }
+        
+        /* Tables */
+        .report-content table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11pt; border: 2px solid #000; }
+        .report-content th, .report-content td { border: 1px solid #000; padding: 8px; text-align: center; }
+        .report-content th { background-color: #e0e0e0; font-weight: bold; }
+        .report-content tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Math Formulas - The "Real" Math Look */
+        .math-block {
+            display: flex; align-items: center; justify-content: center;
+            margin: 15px 0; padding: 10px; background: #fff;
+            font-family: 'Times New Roman', serif; font-size: 13pt; font-style: italic;
+        }
+        .math-eq { display: inline-block; vertical-align: middle; }
+        
+        /* Fraction structure */
+        .fraction { display: inline-block; vertical-align: middle; text-align: center; margin: 0 5px; }
+        .fraction .num { display: block; border-bottom: 1px solid #000; padding: 0 2px; }
+        .fraction .den { display: block; padding: 0 2px; }
+        
+        /* Sub/Sup fix */
+        sub, sup { font-size: 0.7em; font-style: normal; }
+        
+        /* Annotation */
+        .math-desc { font-size: 10pt; color: #666; text-align: center; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
+
+        @media print {
+            body > *:not(#report-modal) { display: none !important; }
+            #report-modal { position: static !important; display: block !important; width: 100% !important; height: auto !important; background: none !important; padding: 0; }
+            .modal-content { width: 100% !important; max-width: none !important; box-shadow: none !important; border: none !important; padding: 0; }
+            .modal-header { display: none !important; }
+            .report-content th { background: #ddd !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="temp-message"></div>
+<div class="container">
+    <header>
+        <div>
+            <h1>应力分析核心 <span class="badge">V3.8</span></h1>
+            <div class="sub-header">COMPOSITE MATERIAL STRESS CALCULATOR // LAB EDITION</div>
+        </div>
+        <div class="header-buttons">
+            <button class="primary" onclick="generateReport()">📋 生成详细计算书</button>
+            <button onclick="showPrintMessage()">📄 打印页面</button>
+        </div>
+    </header>
+
+    <div class="mode-tabs">
+        <button class="mode-btn active" onclick="switchMode('standard')">Standard / 标准双层</button>
+        <button class="mode-btn" onclick="switchMode('multi')">Multi-layer / 多层夹心</button>
+        <button class="mode-btn" onclick="switchMode('irregular')">Irregular / 异形截面</button>
+    </div>
+
+    <div class="main-grid">
+        <!-- Left: Inputs -->
+        <div class="cyber-card">
+            <div style="margin-bottom: 25px; padding-bottom: 10px; font-weight: 900; color: #000; border-bottom: 2px solid #000; text-transform: uppercase; letter-spacing: 1px;">
+                ⚙️ 参数配置 (Input)
+            </div>
+
+            <!-- 1. Standard Inputs -->
+            <div id="input-standard" class="input-section active">
+                <div class="input-group">
+                    <div class="input-group-title simple-title"><span style="background:var(--neon-blue); width:12px; height:12px; display:inline-block;"></span> 顶部材料 (Mat 1)</div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">厚度 t1</span><input type="number" id="std_t1" value="5" oninput="recalc()"><span class="input-suffix">mm</span></div>
+                        <div class="input-wrapper"><span class="input-prefix">模量 E1</span><input type="number" id="std_e1" value="80000" oninput="recalc()"><span class="input-suffix">MPa</span></div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div class="input-group-title simple-title"><span style="background:var(--neon-pink); width:12px; height:12px; display:inline-block;"></span> 底部材料 (Mat 2)</div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">厚度 t2</span><input type="number" id="std_t2" value="20" oninput="recalc()"><span class="input-suffix">mm</span></div>
+                        <div class="input-wrapper"><span class="input-prefix">模量 E2</span><input type="number" id="std_e2" value="21000" oninput="recalc()"><span class="input-suffix">MPa</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Multi Inputs (Dynamic) -->
+            <div id="input-multi" class="input-section">
+                <div style="margin-bottom: 15px; font-size: 0.8rem; color: #666;">* 列表顺序：Layer 1 为最顶层，依次向下堆叠。</div>
+                <div id="layers-list"></div>
+                <button class="btn-add-layer" onclick="addLayer()">+ Add Layer / 增加层</button>
+            </div>
+
+            <!-- 3. Irregular Inputs -->
+            <div id="input-irregular" class="input-section">
+                <div style="background: #fff0f0; border-left:4px solid var(--neon-pink); padding:10px; margin-bottom:20px; font-size:0.8rem; color:#d00; font-weight:bold;">
+                    ⚠️ 注意：形心坐标 (y) 必须基于同一基准面（例如从地面起算）。
+                </div>
+                <div class="input-group">
+                    <div class="input-group-title simple-title" style="color:var(--neon-blue)">截面 1 (Material 1)</div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">面积 A1</span><input type="number" id="irr_a1" value="1000" oninput="recalc()"><span class="input-suffix">mm²</span></div>
+                        <div class="input-wrapper"><span class="input-prefix">惯性矩 I1</span><input type="number" id="irr_i1" value="500000" oninput="recalc()"><span class="input-suffix">mm⁴</span></div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">形心 y1</span><input type="number" id="irr_y1" value="50" oninput="recalc()"><span class="input-suffix">mm</span></div>
+                        <div class="input-wrapper"><span class="input-prefix">高度 h1</span><input type="number" id="irr_h1" value="40" oninput="recalc()"><span class="input-suffix">mm</span></div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">模量 E1</span><input type="number" id="irr_e1" value="206000" oninput="recalc()"><span class="input-suffix">MPa</span></div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div class="input-group-title simple-title" style="color:var(--neon-pink)">截面 2 (Material 2)</div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">面积 A2</span><input type="number" id="irr_a2" value="500" oninput="recalc()"><span class="input-suffix">mm²</span></div>
+                        <div class="input-wrapper"><span class="input-prefix">惯性矩 I2</span><input type="number" id="irr_i2" value="20000" oninput="recalc()"><span class="input-suffix">mm⁴</span></div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">形心 y2</span><input type="number" id="irr_y2" value="10" oninput="recalc()"><span class="input-suffix">mm</span></div>
+                        <div class="input-wrapper"><span class="input-prefix">高度 h2</span><input type="number" id="irr_h2" value="20" oninput="recalc()"><span class="input-suffix">mm</span></div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-wrapper"><span class="input-prefix">模量 E2</span><input type="number" id="irr_e2" value="210000" oninput="recalc()"><span class="input-suffix">MPa</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Common Inputs -->
+            <div class="input-group">
+                <div class="input-group-title simple-title">📐 公共荷载 (Load)</div>
+                <div class="input-row">
+                    <div class="input-wrapper" id="width-container">
+                        <span class="input-prefix">宽度 a</span><input type="number" id="com_width" value="100" oninput="recalc()"><span class="input-suffix">mm</span>
+                    </div>
+                    <div class="input-wrapper">
+                        <span class="input-prefix">弯矩 M</span><input type="number" id="com_moment" value="1000000" oninput="recalc()"><span class="input-suffix">N·mm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Visualization -->
+        <div class="cyber-card">
+            <div class="viz-container" id="viz-container">
+                <div class="viz-bg" id="viz-bg"></div>
+                <svg id="mainSvg" width="100%" height="100%">
+                    <defs>
+                        <pattern id="hatch" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+                            <line x1="0" y1="0" x2="0" y2="4" stroke="#000000" stroke-width="1" opacity="0.2" />
+                        </pattern>
+                    </defs>
+                    <g id="axis-group"></g>
+                    <g id="viewport" transform="translate(350, 250)"><g id="svg-content"></g></g>
+                </svg>
+                <div class="zoom-controls">
+                    <div class="zoom-btn" onclick="resetZoom()" title="复位">⟲</div>
+                    <div class="zoom-btn" onclick="zoom(1.1)" title="放大">+</div>
+                    <div class="zoom-btn" onclick="zoom(0.9)" title="缩小">-</div>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="dashboard">
+                <div class="stat-box"><div class="stat-label">Max Stress (Top)</div><div class="stat-val c-blue" id="res_sigma_1">0.0</div><div class="stat-label">MPa</div></div>
+                <div class="stat-box"><div class="stat-label">Max Stress (Bot)</div><div class="stat-val c-pink" id="res_sigma_2">0.0</div><div class="stat-label">MPa</div></div>
+                <div class="stat-box"><div class="stat-label">中性轴 (N.A.)</div><div class="stat-val c-green" id="res_na">0.0</div><div class="stat-label">mm</div></div>
+                <div class="stat-box"><div class="stat-label">抗弯刚度 (EI)</div><div class="stat-val c-yellow" id="res_ei">0.0</div><div class="stat-label">kN·m²</div></div>
+            </div>
+
+            <!-- Multi-Layer Detailed Results -->
+            <div id="multi-res-container" style="display:none;">
+                <div style="font-weight:900; font-size:0.9rem; margin-bottom:10px; color:#000; display:flex; justify-content:space-between; align-items:center;">
+                    <span>📊 分层应力明细 / LAYER STRESS DETAILS</span>
+                    <span style="font-size:0.7rem; font-weight:normal; color:#666;">(+)拉 Tension / (-)压 Compression</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="layer-res-table">
+                        <thead>
+                            <tr>
+                                <th>Layer / 层</th>
+                                <th>顶部应力 Top Stress (MPa)</th>
+                                <th>底部应力 Bot Stress (MPa)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="multi-res-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <details>
+        <summary>📚 帮助与图例说明</summary>
+        <p><strong>分层应力：</strong> V3.6 在多层模式下，会在右侧新增详细的每一层顶底应力数据。</p>
+        <p><strong>正负号：</strong> 红色 (+) 代表拉应力，蓝色 (-) 代表压应力。</p>
+    </details>
+
+    <div id="report-modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content">
+            <div class="modal-header no-print">
+                <h2>📋 复合截面工程计算书</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="header-buttons primary" onclick="exportToWord()" style="background:#0055bb; color:#fff; border:none;">💾 导出 Word (.doc)</button>
+                    <button class="header-buttons primary" onclick="printReportModal()" style="background:var(--neon-green); color:#fff; border:none;">🖨️ 打印 / PDF</button>
+                    <button class="modal-close" onclick="closeReportModal()">&times;</button>
+                </div>
+            </div>
+            <div id="report-content" class="report-content"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentMode = 'standard';
+    let lastReport = ''; 
+    
+    let layers = [{ t: 3, e: 70000, id: 1 }, { t: 15, e: 10000, id: 2 }, { t: 3, e: 70000, id: 3 }];
+    let baseLayerIndex = 1; 
+
+    const svgContent = document.getElementById('svg-content');
+    const axisGroup = document.getElementById('axis-group');
+    
+    let panX = 350, panY = 300, scale = 1.0, isDragging = false, startX, startY;
+
+    function getLayerColor(index) { return ['var(--neon-blue)', 'var(--neon-green)', 'var(--neon-pink)', 'var(--neon-yellow)'][index % 4]; }
+
+    // Helper for making math fractions
+    function mkFrac(num, den) {
+        return `<div class="fraction"><span class="num">${num}</span><span class="den">${den}</span></div>`;
+    }
+
+    function renderLayers() {
+        const container = document.getElementById('layers-list');
+        container.innerHTML = '';
+        if (baseLayerIndex >= layers.length) baseLayerIndex = 0;
+        layers.forEach((layer, index) => {
+            const isBase = (index === baseLayerIndex);
+            const color = getLayerColor(index);
+            const div = document.createElement('div');
+            div.className = `layer-card ${isBase ? 'is-base' : ''}`;
+            div.innerHTML = `
+                <div class="input-group-title" style="color:${color}; border-bottom:1px dashed #eee; padding-bottom:5px; margin-bottom:10px;">
+                    <span><span style="display:inline-block; width:14px; height:14px; background:${color}; margin-right:8px; vertical-align:middle;"></span> Layer ${index + 1} (Top ${index === 0 ? 'Surface' : ''})</span>
+                    <div>
+                        <button class="layer-control-btn ${isBase ? 'active' : ''}" onclick="setBaseLayer(${index})">★ Base</button>
+                        <button class="layer-control-btn" onclick="removeLayer(${index})" style="color:#d00;">✕</button>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-wrapper"><span class="input-prefix">t</span><input type="number" value="${layer.t}" oninput="updateLayer(${index}, 't', this.value)"><span class="input-suffix">mm</span></div>
+                    <div class="input-wrapper"><span class="input-prefix">E</span><input type="number" value="${layer.e}" oninput="updateLayer(${index}, 'e', this.value)"><span class="input-suffix">MPa</span></div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addLayer() { layers.push({ t: 10, e: 20000, id: Date.now() }); renderLayers(); recalc(); }
+    function removeLayer(index) { if (layers.length <= 1) { alert("Minimum 1 layer."); return; } layers.splice(index, 1); if (baseLayerIndex >= index) baseLayerIndex = Math.max(0, baseLayerIndex - 1); renderLayers(); recalc(); }
+    function updateLayer(idx, f, v) { layers[idx][f] = parseFloat(v) || 0; recalc(); }
+    function setBaseLayer(idx) { baseLayerIndex = idx; renderLayers(); recalc(); }
+
+    function showPrintMessage() {
+        const msg = document.getElementById('temp-message');
+        msg.style.display = 'block'; msg.innerText = "打印中...";
+        setTimeout(() => { window.print(); }, 50);
+        setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    }
+    function showReportModal(c) { document.getElementById('report-content').innerHTML = c; document.getElementById('report-modal').style.display = 'flex'; }
+    function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+    function closeModal(e) { if (e.target.id === 'report-modal') closeReportModal(); }
+    
+    function generateReport() { recalc(); showReportModal(lastReport || "<p>Error generating report.</p>"); }
+    
+    function printReportModal() {
+        document.querySelector('.container').style.display = 'none';
+        document.getElementById('report-modal').style.display = 'flex';
+        setTimeout(() => { window.print(); document.getElementById('report-modal').style.display = 'none'; document.querySelector('.container').style.display = 'block'; }, 10);
+    }
+    
+    function exportToWord() {
+        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Calculation Report</title></head><body>";
+        const footer = "</body></html>";
+        const sourceHTML = header + document.getElementById("report-content").innerHTML + footer;
+        const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+        const fileDownload = document.createElement("a");
+        document.body.appendChild(fileDownload);
+        fileDownload.href = source;
+        fileDownload.download = 'Composite_Stress_Report.doc';
+        fileDownload.click();
+        document.body.removeChild(fileDownload);
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        Array.from(document.querySelectorAll('.mode-btn')).find(b => b.textContent.toLowerCase().includes(mode.split('-')[0])).classList.add('active');
+        document.querySelectorAll('.input-section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById(`input-${mode}`).classList.add('active');
+        document.getElementById('width-container').parentElement.parentElement.style.display = (mode === 'irregular') ? 'none' : 'grid';
+        
+        document.getElementById('multi-res-container').style.display = (mode === 'multi') ? 'block' : 'none';
+
+        if(mode === 'multi') renderLayers();
+        recalc(); resetZoom();
+    }
+
+    function recalc() {
+        let r = { sigma1: 0, sigma2: 0, na: 0, ei: 0, report: '' };
+        try {
+            if (currentMode === 'standard') r = calcStandard();
+            else if (currentMode === 'multi') r = calcMulti();
+            else r = calcIrregular();
+        } catch (e) { console.error(e); }
+        updateUI(r.sigma1, r.sigma2, r.na, r.ei);
+        lastReport = r.report;
+    }
+
+    function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+    function setRes(id, val) { 
+        const el = document.getElementById(id);
+        if(el.innerText !== val) {
+            el.innerText = val;
+            el.classList.remove('val-anim');
+            void el.offsetWidth;
+            el.classList.add('val-anim');
+        }
+    }
+    function formatNum(n) { return n.toExponential(4).replace('e+', ' × 10<sup>').replace('e-', ' × 10<sup>-') + '</sup>'; }
+    function formatVal(n, u) { return `${n.toFixed(4)} ${u}`; }
+
+    function calcStandard() {
+        const t1=getVal('std_t1'), e1=getVal('std_e1'), t2=getVal('std_t2'), e2=getVal('std_e2'), w=getVal('com_width'), M=getVal('com_moment');
+        if(t1<=0||t2<=0) throw new Error("Invalid inputs");
+        const n1=e1/e2, w1=w*n1, A1=w1*t1, A2=w*t2, y1=t2+t1/2, y2=t2/2;
+        const YNA=(A1*y1+A2*y2)/(A1+A2);
+        
+        const I1_own = (w1*t1**3)/12;
+        const d1 = y1-YNA;
+        const I1_trans = A1*(d1)**2;
+        const I2_own = (w*t2**3)/12;
+        const d2 = y2-YNA;
+        const I2_trans = A2*(d2)**2;
+
+        const I=(I1_own+I1_trans) + (I2_own+I2_trans);
+        const s1=(M*Math.abs(t1+t2-YNA)/I)*n1, s2=(M*Math.abs(-YNA)/I)*1;
+        drawStandard(t1,t2,w,w1,YNA,y1,y2);
+        
+        let rep = `
+            <h1>复合材料力学计算书 <br><span style="font-size:0.6em; font-weight:normal;">Composite Material Mechanics Report</span></h1>
+            
+            <h2>1. 设计参数 (Design Parameters)</h2>
+            <p>根据输入条件，截面参数汇总如下：</p>
+            <table>
+                <tr><th>参数 (Parameter)</th><th>符号 (Symbol)</th><th>数值 (Value)</th><th>单位 (Unit)</th></tr>
+                <tr><td>截面宽度 (Width)</td><td><i>b</i></td><td>${w}</td><td>mm</td></tr>
+                <tr><td>弯矩设计值 (Bending Moment)</td><td><i>M</i></td><td>${M}</td><td>N·mm</td></tr>
+                <tr><td>顶部材料厚度 (Top Thickness)</td><td><i>t<sub>1</sub></i></td><td>${t1}</td><td>mm</td></tr>
+                <tr><td>顶部材料模量 (Top Modulus)</td><td><i>E<sub>1</sub></i></td><td>${e1}</td><td>MPa</td></tr>
+                <tr><td>底部材料厚度 (Bot Thickness)</td><td><i>t<sub>2</sub></i></td><td>${t2}</td><td>mm</td></tr>
+                <tr><td>底部材料模量 (Bot Modulus)</td><td><i>E<sub>2</sub></i></td><td>${e2}</td><td>MPa</td></tr>
+            </table>
+
+            <h2>2. 截面换算特性 (Transformed Section Properties)</h2>
+            <p>将顶部材料 (Mat 1) 换算为底部材料 (Mat 2) 的等效宽度。计算公式如下：</p>
+            <div class="math-block">
+                n = ${mkFrac('E<sub>1</sub>', 'E<sub>2</sub>')} = ${mkFrac(e1, e2)} = <strong>${n1.toFixed(4)}</strong>
+            </div>
+            <p>等效宽度 (Equivalent Width):</p>
+            <div class="math-block">
+                b<sub>eq</sub> = b · n = ${w} · ${n1.toFixed(4)} = <strong>${w1.toFixed(2)} mm</strong>
+            </div>
+
+            <h2>3. 中性轴位置 (Neutral Axis Calculation)</h2>
+            <p>以截面底部 (y=0) 为基准，计算组合截面的形心位置 (Centroid)：</p>
+            <div class="math-block">
+                y<sub>NA</sub> = ${mkFrac('∑(A · y)', '∑A')}
+            </div>
+            <p>计算明细表：</p>
+            <table>
+                <tr><th>部分 (Part)</th><th>面积 A (mm²)</th><th>形心 y (mm)</th><th>静矩 A·y (mm³)</th></tr>
+                <tr><td>Top (Transformed)</td><td>${A1.toFixed(1)}</td><td>${y1.toFixed(1)}</td><td>${(A1*y1).toFixed(0)}</td></tr>
+                <tr><td>Bot (Original)</td><td>${A2.toFixed(1)}</td><td>${y2.toFixed(1)}</td><td>${(A2*y2).toFixed(0)}</td></tr>
+                <tr style="font-weight:bold;"><td>总计 (Total)</td><td>${(A1+A2).toFixed(1)}</td><td>-</td><td>${(A1*y1+A2*y2).toFixed(0)}</td></tr>
+            </table>
+            <div class="math-block">
+                y<sub>NA</sub> = ${mkFrac((A1*y1+A2*y2).toFixed(0), (A1+A2).toFixed(1))} = <strong>${YNA.toFixed(2)} mm</strong>
+            </div>
+
+            <h2>4. 惯性矩计算 (Moment of Inertia)</h2>
+            <p>应用平行移轴定理 (Parallel Axis Theorem) 计算换算截面的总惯性矩：</p>
+            <div class="math-block">I = I<sub>0</sub> + A · d<sup>2</sup></div>
+            <div class="math-desc">其中 d 为各层形心至中性轴的距离 (Distance from layer centroid to NA)</div>
+            <table>
+                <tr><th>层 (Layer)</th><th>I<sub>0</sub> (${mkFrac('bh<sup>3</sup>','12')})</th><th>d (${mkFrac('|y - y<sub>NA</sub>|','')})</th><th>A · d<sup>2</sup></th><th>I<sub>layer</sub></th></tr>
+                <tr><td>Top</td><td>${I1_own.toFixed(0)}</td><td>${Math.abs(d1).toFixed(1)}</td><td>${I1_trans.toFixed(0)}</td><td>${(I1_own+I1_trans).toFixed(0)}</td></tr>
+                <tr><td>Bot</td><td>${I2_own.toFixed(0)}</td><td>${Math.abs(d2).toFixed(1)}</td><td>${I2_trans.toFixed(0)}</td><td>${(I2_own+I2_trans).toFixed(0)}</td></tr>
+                <tr style="font-weight:bold;"><td>总计 I</td><td>-</td><td>-</td><td>-</td><td>${I.toFixed(0)} mm<sup>4</sup></td></tr>
+            </table>
+            <p>抗弯刚度 (Flexural Stiffness) EI：</p>
+            <div class="math-block">EI = I · E<sub>base</sub> = ${formatNum(I*e2)} N·mm<sup>2</sup></div>
+
+            <h2>5. 应力校核 (Stress Verification)</h2>
+            <p>计算公式 (Formula):</p>
+            <div class="math-block">
+                σ = ${mkFrac('M · y<sub>dist</sub>', 'I')} · n
+            </div>
+            
+            <h3>(1) 顶部应力 (Top Fiber Stress)</h3>
+            <p>距离 (Distance): y<sub>dist</sub> = |${(t1+t2).toFixed(1)} - ${YNA.toFixed(2)}| = ${(t1+t2-YNA).toFixed(2)} mm</p>
+            <div class="math-block">
+                σ<sub>top</sub> = ${mkFrac(M + ' · ' + (t1+t2-YNA).toFixed(2), I.toFixed(0))} · ${n1.toFixed(4)} = <strong>${s1.toFixed(2)} MPa</strong>
+            </div>
+
+            <h3>(2) 底部应力 (Bottom Fiber Stress)</h3>
+            <p>距离 (Distance): y<sub>dist</sub> = |0 - ${YNA.toFixed(2)}| = ${YNA.toFixed(2)} mm</p>
+            <div class="math-block">
+                σ<sub>bot</sub> = ${mkFrac(M + ' · ' + YNA.toFixed(2), I.toFixed(0))} · 1.0 = <strong>${s2.toFixed(2)} MPa</strong>
+            </div>
+        `;
+        return { sigma1:s1, sigma2:s2, na:YNA, ei:I*e2, report:rep };
+    }
+
+    function calcMulti() {
+        const w=getVal('com_width'), M=getVal('com_moment');
+        if(!layers.length) return {sigma1:0,sigma2:0,na:0,ei:0,report:''};
+        const E_base = layers[baseLayerIndex].e;
+        let curY = layers.reduce((a,b)=>a+b.t,0);
+        
+        const calcs = layers.map((l,i) => {
+            const n = l.e/E_base, w_eq = w*n, A = w_eq*l.t, yc = curY - l.t/2;
+            const obj = { ...l, n, w_eq, A, yc, yt: curY, yb: curY-l.t, idx: i };
+            curY -= l.t; return obj;
+        });
+        
+        const sumAy = calcs.reduce((a,b)=>a+b.A*b.yc,0), sumA = calcs.reduce((a,b)=>a+b.A,0), YNA = sumAy/sumA;
+        
+        let Itot = 0;
+        let iCalcRows = '';
+        
+        calcs.forEach(c => { 
+            const I0 = (c.w_eq*c.t**3)/12;
+            const d = c.yc - YNA;
+            const Ad2 = c.A * d**2;
+            const I_layer = I0 + Ad2;
+            Itot += I_layer;
+            iCalcRows += `<tr><td>L${c.idx+1}</td><td>${c.yc.toFixed(1)}</td><td>${c.A.toFixed(0)}</td><td>${I0.toFixed(0)}</td><td>${Math.abs(d).toFixed(1)}</td><td>${Ad2.toFixed(0)}</td><td>${I_layer.toFixed(0)}</td></tr>`;
+        });
+        
+        let sTop = 0, sBot = 0;
+        let detailedRows = [];
+        let stressCalcRows = '';
+
+        calcs.forEach((c,i) => {
+            const dist_top = c.yt - YNA;
+            const dist_bot = c.yb - YNA;
+            const sig_t = -(M * dist_top / Itot) * c.n;
+            const sig_bot = -(M * dist_bot / Itot) * c.n;
+            c.sigmaTop = sig_t; c.sigmaBot = sig_bot;
+            detailedRows.push({ idx: i, t: c.t, st: sig_t, sb: sig_bot });
+            stressCalcRows += `<tr><td>L${c.idx+1}</td><td>${c.n.toFixed(2)}</td><td>${dist_top.toFixed(1)}</td><td>${sig_t.toFixed(2)}</td><td>${dist_bot.toFixed(1)}</td><td>${sig_bot.toFixed(2)}</td></tr>`;
+            if(i===0) sTop = Math.abs(sig_t);
+            if(i===calcs.length-1) sBot = Math.abs(sig_bot);
+        });
+
+        drawMulti(calcs, w, YNA);
+        updateMultiResultsUI(detailedRows);
+
+        let rep = `
+            <h1>多层复合材料计算书 <br><span style="font-size:0.6em; font-weight:normal;">Multi-Layer Composite Report</span></h1>
+            
+            <h2>1. 设计参数 (Parameters)</h2>
+            <p>基准模量 (Base Modulus) E<sub>b</sub> = ${E_base} MPa (Layer ${baseLayerIndex+1})</p>
+            <p>截面宽度 (Width) b = ${w} mm, 弯矩 (Moment) M = ${M} N·mm</p>
+
+            <h2>2. 几何特性 (Geometric Properties)</h2>
+            <table>
+                <tr><th>层 (Layer)</th><th>t (mm)</th><th>E (MPa)</th><th>n (${mkFrac('E','E<sub>b</sub>')})</th><th>b<sub>eq</sub> (mm)</th><th>A (mm²)</th></tr>
+                ${calcs.map(c => `<tr><td>L${c.idx+1}</td><td>${c.t}</td><td>${c.e}</td><td>${c.n.toFixed(2)}</td><td>${c.w_eq.toFixed(1)}</td><td>${c.A.toFixed(0)}</td></tr>`).join('')}
+            </table>
+            <p>中性轴位置 (Neutral Axis Position):</p>
+            <div class="math-block">
+                y<sub>NA</sub> = ${mkFrac('∑(A · y)', '∑A')} = ${mkFrac(sumAy.toFixed(0), sumA.toFixed(0))} = <strong>${YNA.toFixed(2)} mm</strong>
+            </div>
+
+            <h2>3. 刚度计算 (Stiffness Calculation)</h2>
+            <table>
+                <tr><th>层 (Layer)</th><th>y<sub>c</sub></th><th>Area</th><th>I<sub>0</sub></th><th>d</th><th>A·d<sup>2</sup></th><th>I<sub>layer</sub></th></tr>
+                ${iCalcRows}
+                <tr style="font-weight:bold;"><td>Total</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>${Itot.toFixed(0)}</td></tr>
+            </table>
+            <div class="math-block">EI = I<sub>total</sub> · E<sub>b</sub> = ${formatNum(Itot*E_base)} N·mm<sup>2</sup></div>
+
+            <h2>4. 应力分布 (Stress Distribution)</h2>
+            <p>应力计算公式：σ = - ${mkFrac('M · y', 'I')} · n</p>
+            <table>
+                <tr><th>层 (Layer)</th><th>n</th><th>y<sub>top_dist</sub></th><th>σ<sub>top</sub> (MPa)</th><th>y<sub>bot_dist</sub></th><th>σ<sub>bot</sub> (MPa)</th></tr>
+                ${stressCalcRows}
+            </table>
+        `;
+        return { sigma1: sTop, sigma2: sBot, na: YNA, ei: Itot*E_base, report: rep };
+    }
+
+    function updateMultiResultsUI(rows) {
+        const tbody = document.getElementById('multi-res-body');
+        tbody.innerHTML = '';
+        rows.forEach(r => {
+            const fmt = (v) => `<span class="${v>=0?'val-pos':'val-neg'}">${v>0?'+':''}${v.toFixed(2)}</span>`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>Layer ${r.idx + 1}</td><td>${fmt(r.st)}</td><td>${fmt(r.sb)}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function calcIrregular() {
+        const A1=getVal('irr_a1'), I1=getVal('irr_i1'), y1=getVal('irr_y1'), h1=getVal('irr_h1'), E1=getVal('irr_e1');
+        const A2=getVal('irr_a2'), I2=getVal('irr_i2'), y2=getVal('irr_y2'), h2=getVal('irr_h2'), E2=getVal('irr_e2'), M=getVal('com_moment');
+        const n1=E1/E2, A1eq=A1*n1, YNA=(A1eq*y1+A2*y2)/(A1eq+A2);
+        
+        const I1_trans = A1eq*(y1-YNA)**2;
+        const I1_total = (I1*n1+I1_trans);
+        const I2_trans = A2*(y2-YNA)**2;
+        const I2_total = (I2+I2_trans);
+        const Itot = I1_total + I2_total;
+        
+        const dist1 = Math.max(Math.abs(y1+h1/2-YNA),Math.abs(y1-h1/2-YNA));
+        const dist2 = Math.max(Math.abs(y2+h2/2-YNA),Math.abs(y2-h2/2-YNA));
+        const s1=(M*dist1/Itot)*n1;
+        const s2=(M*dist2/Itot)*1;
+        
+        drawIrregular(A1,y1,h1,A2,y2,h2,YNA);
+        
+        let rep = `
+            <h1>异形截面分析报告 <br><span style="font-size:0.6em; font-weight:normal;">Irregular Section Analysis</span></h1>
+            
+            <h2>1. 截面定义 (Section Properties)</h2>
+            <table>
+                <tr><th>部分 (Part)</th><th>面积 A</th><th>惯性矩 I<sub>local</sub></th><th>形心 y</th><th>模量 E</th></tr>
+                <tr><td>Part 1</td><td>${A1}</td><td>${I1}</td><td>${y1}</td><td>${E1}</td></tr>
+                <tr><td>Part 2</td><td>${A2}</td><td>${I2}</td><td>${y2}</td><td>${E2}</td></tr>
+            </table>
+            
+            <h2>2. 换算与中性轴 (Transformed & NA)</h2>
+            <p>基准材料: Part 2. 模量比 n = ${n1.toFixed(4)}</p>
+            <div class="math-block">
+                A'<sub>1</sub> = A<sub>1</sub> · n = ${A1eq.toFixed(1)} mm<sup>2</sup>
+            </div>
+            <div class="math-block">
+                y<sub>NA</sub> = ${mkFrac('A\'<sub>1</sub>y<sub>1</sub> + A<sub>2</sub>y<sub>2</sub>', 'A\'<sub>1</sub> + A<sub>2</sub>')} = <strong>${YNA.toFixed(2)} mm</strong>
+            </div>
+
+            <h2>3. 惯性矩汇总 (Total Inertia)</h2>
+            <div class="math-block">I<sub>part</sub> = I<sub>local</sub> · n + A' · d<sup>2</sup></div>
+            <table>
+                <tr><th>Part</th><th>I<sub>local</sub>·n</th><th>d (y-NA)</th><th>A'·d<sup>2</sup></th><th>I<sub>total_part</sub></th></tr>
+                <tr><td>1</td><td>${(I1*n1).toFixed(0)}</td><td>${(y1-YNA).toFixed(1)}</td><td>${I1_trans.toFixed(0)}</td><td>${I1_total.toFixed(0)}</td></tr>
+                <tr><td>2</td><td>${I2}</td><td>${(y2-YNA).toFixed(1)}</td><td>${I2_trans.toFixed(0)}</td><td>${I2_total.toFixed(0)}</td></tr>
+                <tr style="font-weight:bold;"><td>Total</td><td>-</td><td>-</td><td>-</td><td>${Itot.toFixed(0)} mm<sup>4</sup></td></tr>
+            </table>
+
+            <h2>4. 最大应力 (Max Stresses)</h2>
+            <p>Part 1 (Mat 1): Max Dist = ${dist1.toFixed(2)} mm</p>
+            <div class="math-block">σ<sub>1</sub> = ${mkFrac(M + ' · ' + dist1.toFixed(2), Itot.toFixed(0))} · ${n1.toFixed(4)} = <strong>${s1.toFixed(2)} MPa</strong></div>
+            <p>Part 2 (Mat 2): Max Dist = ${dist2.toFixed(2)} mm</p>
+            <div class="math-block">σ<sub>2</sub> = ${mkFrac(M + ' · ' + dist2.toFixed(2), Itot.toFixed(0))} · 1.0 = <strong>${s2.toFixed(2)} MPa</strong></div>
+        `;
+        return {sigma1:s1, sigma2:s2, na:YNA, ei:Itot*E2, report: rep};
+    }
+
+    function updateUI(s1, s2, na, ei) {
+        setRes('res_sigma_1', s1.toFixed(2)); setRes('res_sigma_2', s2.toFixed(2));
+        setRes('res_na', na.toFixed(2)); setRes('res_ei', (ei/1e9).toFixed(2));
+    }
+
+    // Visualization
+    function updateTransform() {
+        document.getElementById('viewport').setAttribute('transform', `translate(${panX}, ${panY}) scale(${scale})`);
+        drawAxis();
+        document.getElementById('viz-bg').style.backgroundSize = `${20*scale}px ${20*scale}px`;
+    }
+    function zoom(f) { scale*=f; updateTransform(); }
+    function resetZoom() { panX=350; panY=300; scale=1.0; updateTransform(); }
+    
+    const vc = document.getElementById('viz-container');
+    vc.addEventListener('wheel', e => { e.preventDefault(); scale = Math.max(0.1, Math.min(10, scale - e.deltaY*0.001)); updateTransform(); });
+    vc.addEventListener('mousedown', e => { isDragging=true; startX=e.clientX-panX; startY=e.clientY-panY; vc.style.cursor='grabbing'; });
+    window.addEventListener('mousemove', e => { if(isDragging) { panX=e.clientX-startX; panY=e.clientY-startY; updateTransform(); } });
+    window.addEventListener('mouseup', () => { isDragging=false; vc.style.cursor='grab'; });
+
+    function clearSvg() { svgContent.innerHTML = ''; }
+    function createRect(x,y,w,h,f,s,d) {
+        const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        r.setAttribute("x",x); r.setAttribute("y",y); r.setAttribute("width",w); r.setAttribute("height",h); r.setAttribute("fill",f);
+        if(s) { r.setAttribute("stroke",s); r.setAttribute("stroke-width","2"); }
+        if(d) r.setAttribute("stroke-dasharray",d);
+        return r;
+    }
+    function createLine(x1,y1,x2,y2,c,d,w="2") {
+        const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",c); l.setAttribute("stroke-width",w);
+        if(d) l.setAttribute("stroke-dasharray",d);
+        return l;
+    }
+    function createText(x,y,t,c,a="middle",s="12",w="bold") {
+        const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        txt.setAttribute("x",x); txt.setAttribute("y",y); txt.setAttribute("fill",c); txt.setAttribute("font-size",s); txt.setAttribute("font-weight",w);
+        txt.setAttribute("text-anchor",a); txt.setAttribute("dominant-baseline","middle"); txt.textContent=t;
+        return txt;
+    }
+
+    const DS = 3; 
+    function drawAxis() {
+        axisGroup.innerHTML = '';
+        const axisX = 70; // Increased padding
+        const H = vc.clientHeight || 550;
+        axisGroup.appendChild(createLine(axisX,0,axisX,H,"#000",null,"2"));
+        let step = (scale>1.5)?10:(scale<0.5)?100:50;
+        for(let y=-500; y<=1000; y+=step) {
+            const sy = panY - (y*scale*DS);
+            if(sy>-20 && sy<H+20) {
+                axisGroup.appendChild(createLine(axisX-6,sy,axisX,sy,"#000",null,"2"));
+                const isZero = (y===0);
+                // Bigger fonts and high contrast
+                const txt = createText(axisX-12, sy+2, y, isZero?"var(--neon-blue)":"#000", "end", isZero?"16":"12", isZero?"900":"600");
+                axisGroup.appendChild(txt);
+                if(isZero) axisGroup.appendChild(createLine(axisX-8,sy,axisX,sy,"var(--neon-blue)",null,"3"));
+            }
+        }
+    }
+
+    function drawCentroid(y,l,c) {
+        const sy = -y*DS;
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.appendChild(createLine(-80,sy,80,sy,c,"4,2","1"));
+        g.appendChild(createLine(0,sy-5,0,sy+5,c,null,"2"));
+        g.appendChild(createText(90,sy,l,c,"start","12"));
+        svgContent.appendChild(g);
+    }
+
+    function drawStandard(t1,t2,w,w1,YNA,y1,y2) {
+        clearSvg();
+        const dR = (y,h,ww,f,s,d) => svgContent.appendChild(createRect(-ww/2*DS, -(y+h)*DS, ww*DS, h*DS, f, s, d));
+        dR(0,t2,Math.min(w,200),"rgba(255,51,0,0.1)","var(--neon-pink)");
+        dR(t2,t1,Math.min(w,200),"rgba(0,51,255,0.1)","var(--neon-blue)");
+        dR(t2,t1,Math.min(w1,400),"url(#hatch)","var(--neon-blue)","5,5");
+        drawCentroid(y1,"C1","var(--neon-blue)"); drawCentroid(y2,"C2","var(--neon-pink)");
+        const ny = -YNA*DS;
+        svgContent.appendChild(createLine(-200,ny,200,ny,"var(--neon-green)","10,5","3"));
+        svgContent.appendChild(createText(215,ny,"N.A.","var(--neon-green)","start","14"));
+    }
+
+    function drawMulti(cl,bw,YNA) {
+        clearSvg();
+        cl.forEach(l => {
+            const c = getLayerColor(l.idx);
+            const wb=Math.min(bw,250), we=Math.min(l.w_eq,350);
+            svgContent.appendChild(createRect(-wb/2*DS, -(l.yb+l.t)*DS, wb*DS, l.t*DS, "rgba(0,0,0,0.03)", c));
+            svgContent.appendChild(createRect(-we/2*DS, -(l.yb+l.t)*DS, we*DS, l.t*DS, "url(#hatch)", c, "4,4"));
+            drawCentroid(l.yc, `C${l.idx+1}`, "#333");
+        });
+        const ny = -YNA*DS;
+        svgContent.appendChild(createLine(-200,ny,200,ny,"var(--neon-green)","10,5","3"));
+        svgContent.appendChild(createText(215,ny,"N.A.","var(--neon-green)","start","14"));
+    }
+
+    function drawIrregular(A1,y1,h1,A2,y2,h2,YNA) {
+        clearSvg();
+        const w1=(h1>0)?A1/h1:50, w2=(h2>0)?A2/h2:50;
+        const dB = (y,h,w,c,l) => {
+            const sy=-(y+h/2)*DS, sh=h*DS, sw=Math.min(w,400)*DS;
+            svgContent.appendChild(createRect(-sw/2,sy,sw,sh,"rgba(0,0,0,0.05)",c));
+            drawCentroid(y,l,c);
+        };
+        dB(y1,h1,w1,"var(--neon-blue)","Sec1"); dB(y2,h2,w2,"var(--neon-pink)","Sec2");
+        const ny = -YNA*DS;
+        svgContent.appendChild(createLine(-150,ny,150,ny,"var(--neon-green)","10,5","3"));
+        svgContent.appendChild(createText(165,ny,"N.A.","var(--neon-green)","start","14"));
+    }
+
+    recalc(); drawAxis();
+    document.addEventListener('DOMContentLoaded', () => { if(!document.querySelector('.mode-btn.active')) switchMode('standard'); else recalc(); });
+</script>
+</body>
+</html>

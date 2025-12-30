@@ -1,0 +1,3234 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoneCalc Pro - Advanced Stone Cladding Calculation</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Add html-docx-js for export functionality -->
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        /* Specific Styles to match the User's Screenshot */
+        body {
+            background: #fdfdfd;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Inputs */
+        .sidebar {
+            width: 350px;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+            z-index: 10;
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .sidebar-title {
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border-left: 3px solid #2563eb;
+            padding-left: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #374151;
+            transition: border 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        .input-wrapper .unit {
+            position: absolute;
+            right: 10px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Row for dual inputs */
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
+        /* Main Content Report */
+        .main-content {
+            flex: 1;
+            background: #ffffff;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        /* Header */
+        .report-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .app-icon {
+            font-size: 2rem;
+            color: #2563eb;
+            margin-bottom: 10px;
+            display: inline-block;
+            background: #eff6ff;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2563eb;
+            letter-spacing: -0.5px;
+        }
+
+        .app-subtitle {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .badge-verified {
+            background: #ecfdf5;
+            color: #10b981;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .btn-action {
+            background: #1f2937;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-action.secondary {
+            background: #4b5563;
+        }
+
+        /* Report Sections */
+        .report-section {
+            margin-bottom: 40px;
+        }
+
+        .sec-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Tab Button Styles */
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 4px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #2563eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .sec-bullet {
+            width: 6px;
+            height: 6px;
+            background: #2563eb;
+            border-radius: 50%;
+        }
+
+        .sec-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        /* Toolbox Section Toggle */
+        .sec-type-toggle button {
+            border: none;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border-radius: 3px;
+            background: transparent;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+
+        .sec-type-toggle button.active {
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Anchor Mode Toggle */
+        .anchor-mode-btn {
+            flex: 1;
+            background: transparent;
+            color: #64748b;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .anchor-mode-btn.active {
+            background: white !important;
+            color: #1e293b !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-weight: 700;
+        }
+
+        /* Toolbox V2 Styles */
+        .tb-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .tb-card-blue-strip {
+            border-left: 4px solid #3b82f6;
+            margin-bottom: 20px;
+        }
+
+        .tb-card-purple-strip {
+            border-left: 4px solid #a855f7;
+            margin-bottom: 20px;
+        }
+
+        .tb-strip-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .tb-load-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tb-load-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .tb-load-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .tb-input-sm {
+            padding: 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .tb-select-sm {
+            padding: 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background: white;
+        }
+
+        .tb-input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            transition: border-color 0.2s;
+        }
+
+        .tb-input-row:hover {
+            border-color: #cbd5e1;
+        }
+
+
+
+        .tb-input-row label {
+            font-size: 0.85rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .tb-input-row input {
+            width: 80px;
+            text-align: right;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-family: inherit;
+        }
+
+        .tb-input-row input:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        .tb-res-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 5px;
+        }
+
+        .tb-res-item {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f1f5f9;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .tb-res-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .tb-res-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .tb-res-val {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .tb-res-val.text-blue {
+            color: #2563eb;
+        }
+
+        .tb-res-val.font-serif {
+            font-family: "Times New Roman", serif;
+        }
+
+        .tb-res-unit {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .tb-badge-std {
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+
+        .sec-subtitle {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .desc-box {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #f3f4f6;
+            border-radius: 8px;
+            background: #fdfdfd;
+            color: #4b5563;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Result Cards Grid */
+        .res-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .res-card {
+            background: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: transform 0.1s;
+            cursor: pointer;
+        }
+
+        .res-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .res-icon {
+            width: 32px;
+            height: 32px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .res-icon.fail {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .res-content {
+            flex: 1;
+        }
+
+        .res-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        .res-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .res-unit {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        /* Toolbox Button Styling in Report */
+        .toolbox-entry {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn-toolbox-entry {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Restored Section 3 Card Styles */
+        .res-grid-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .res-card-full {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            width: 100%;
+        }
+
+        .card-header-row {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .card-header-row:hover {
+            background: #f9fafb;
+        }
+
+        .header-label {
+            flex: 1;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .header-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #10b981;
+            /* Default Success Green */
+        }
+
+        .header-unit {
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-left: -5px;
+        }
+
+        .chevron {
+            color: #9ca3af;
+            transition: transform 0.2s;
+            font-size: 0.8rem;
+        }
+
+        .card-body-expanded {
+            background: #fdfdfd;
+            border-top: 1px dashed #e5e7eb;
+            padding: 15px 15px 15px 45px;
+            /* Indent to align with text */
+            display: none;
+        }
+
+        .calc-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .calc-label::before {
+            content: "▶";
+            margin-right: 8px;
+        }
+
+        .calc-step {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #4b5563;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .calc-limit {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+
+        .btn-toolbox-entry:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .btn-toolbox-entry .icon {
+            margin-right: 8px;
+            color: #f59e0b;
+        }
+
+        /* History List Styles */
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .history-item:hover {
+            background: #f9fafb;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+
+        .history-time {
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
+
+        .history-item .delete-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            opacity: 0;
+            background: none;
+            color: #dc2626;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            display: block;
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            padding: 0 5px;
+        }
+
+        .history-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container" id="app-main-view">
+        <!-- SIDEBAR INPUTS -->
+        <div class="sidebar">
+            <!-- HISTORY LIST (MOVED TO TOP) -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">| HISTORY (历史记录)</div>
+                <div id="history-list" class="history-list">
+                    <!-- History items injected by JS -->
+                </div>
+                <!-- <div style="font-size:0.8rem; color:#9ca3af; margin-top:10px; text-align:center;">
+                    Auto-saved locally
+                </div> -->
+            </div>
+
+            <!-- Section 1 -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">| 1. BASIC PARAMS (基本参数)</div>
+                <div class="input-group">
+                    <label>Location (地区)</label>
+                    <div class="input-wrapper"><input type="text" id="inp-location" value="深圳"></div>
+                </div>
+                <div class="input-group">
+                    <label>Seismic Intensity (抗震设防烈度)</label>
+                    <div class="input-wrapper"><input type="text" id="inp-intensity" value="7"><span
+                            class="unit">deg</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Seismic Coeff (地震系数)</label>
+                    <div class="input-wrapper"><input type="number" id="amax" value="0.08"><span
+                            class="unit">amax</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Stone Density (石材密度)</label>
+                    <div class="input-wrapper"><input type="number" id="density" value="28"><span
+                            class="unit">kN/m³</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Stone Strength (石材强度)</label>
+                    <div class="input-wrapper"><input type="number" id="fgm" value="8.0"><span class="unit">MPa</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">| 2. PANEL GEOMETRY (面板尺寸)</div>
+                <label
+                    style="font-size:0.75rem; color:#4b5563; display:block; margin-bottom:5px; font-weight:600;">PANEL
+                    SIZE (W x H)</label>
+                <div class="input-row" style="margin-bottom:15px;">
+                    <div class="input-wrapper"><input type="number" id="width-b" value="1220"><span
+                            class="unit">mm</span></div>
+                    <div class="input-wrapper"><input type="number" id="height-h" value="887"><span
+                            class="unit">mm</span></div>
+                </div>
+
+                <div class="input-group">
+                    <label>Thickness (厚度)</label>
+                    <div class="input-wrapper"><input type="number" id="thickness-t" value="25"><span
+                            class="unit">mm</span></div>
+                </div>
+
+                <label style="font-size:0.75rem; color:#4b5563; display:block; margin-bottom:5px; font-weight:600;">CALC
+                    SPAN (计算跨度)</label>
+                <div class="input-row" style="margin-bottom:15px;">
+                    <div class="input-wrapper"><input type="number" id="span-a0" value="1220"><span
+                            class="unit">mm</span></div>
+                    <div class="input-wrapper"><input type="number" id="span-b0" value="887"><span
+                            class="unit">mm</span></div>
+                </div>
+
+                <div
+                    style="margin-bottom:15px; display:flex; gap:5px; background:#eff6ff; padding:4px; border-radius:6px;">
+                    <button class="tab-btn active" onclick="switchTab('backbolt')">Back Bolt (背栓)</button>
+                    <button class="tab-btn" onclick="switchTab('kerf')">Kerf (短槽)</button>
+                </div>
+
+                <div id="inputs-backbolt">
+                    <label
+                        style="font-size:0.75rem; color:#4b5563; display:block; margin-bottom:5px; font-weight:600;">BOLT
+                        CONFIG (背栓配置)</label>
+                    <div class="input-row">
+                        <div class="input-wrapper"><input type="number" id="bolt-n" value="4"><span
+                                class="unit">孔数量</span></div>
+                        <div class="input-wrapper"><input type="number" id="bolt-d" value="60"><span
+                                class="unit">孔直径(mm)</span></div>
+                    </div>
+                    <div class="input-wrapper" style="margin-top:10px;"><input type="number" id="bolt-h"
+                            value="15"><span class="unit">孔深度(mm)</span></div>
+                </div>
+
+                <div id="inputs-kerf" style="display:none;">
+                    <div class="input-row">
+                        <div class="input-group" style="flex:1;">
+                            <label style="margin-bottom:2px; font-size:0.75rem; color:#4b5563; font-weight:600;">C
+                                槽口宽度</label>
+                            <div class="input-wrapper"><input type="number" id="slot-c" value="3"></div>
+                        </div>
+                        <div class="input-group" style="flex:1;">
+                            <label style="margin-bottom:2px; font-size:0.75rem; color:#4b5563; font-weight:600;">S
+                                单个槽底总长度</label>
+                            <div class="input-wrapper"><input type="number" id="slot-s" value="25"></div>
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top:10px;">
+                        <label style="margin-bottom:2px; font-size:0.75rem; color:#4b5563; font-weight:600;">N
+                            一边挂件数量</label>
+                        <div class="input-wrapper"><input type="number" id="slot-n" value="2"></div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 5px; line-height: 1.4;">
+                        * 矩形槽单个槽底总长度s=槽底长+2*槽深
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3 Hanger -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">| 3. HANGER MECHANICS (挂件详参)</div>
+                <div id="hanger-schematic-container"
+                    style="height:150px; margin-bottom:15px; background:#f9fafb; border-radius:4px;"></div>
+
+                <label
+                    style="font-size:0.75rem; color:#4b5563; display:block; margin-bottom:5px; font-weight:600;">FORCE
+                    ARMS (力臂参数)</label>
+                <div class="input-row" style="margin-bottom:10px;">
+                    <div class="input-wrapper"><input type="number" id="hanger-l1" value="0.038"><span
+                            class="unit">m</span></div>
+                    <div class="input-wrapper"><input type="number" id="hanger-l2" value="0.019"><span
+                            class="unit">m</span></div>
+                </div>
+                <div class="input-wrapper"><input type="number" id="hanger-l3" value="0.023"><span class="unit">L3
+                        ECC</span></div>
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 5px; line-height: 1.4;">
+                    * <span id="note-l1">0.038</span>对应L1，<span id="note-l2">0.019</span>对应L2，<span
+                        id="note-l3">0.023</span>对应L3，三者的单位都是m。
+                </div>
+
+                <label
+                    style="font-size:0.75rem; color:#4b5563; display:block; margin:15px 0 5px 0; font-weight:600;">SECTION
+                    PROPS (截面参数)</label>
+                <div class="input-row">
+                    <div class="input-wrapper"><input type="number" id="hanger-a" value="400"><span
+                            class="unit">A</span></div>
+                    <div class="input-wrapper"><input type="number" id="hanger-a0" value="300"><span
+                            class="unit">A0</span></div>
+                </div>
+                <div class="input-row" style="margin-top:10px;">
+                    <div class="input-wrapper"><input type="number" id="hanger-wx" value="2000"><span
+                            class="unit">Wx</span></div>
+                    <div class="input-wrapper"><input type="number" id="hanger-ae" value="150"><span
+                            class="unit">Ae</span></div>
+                </div>
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 5px; line-height: 1.4;">
+                    * A:挂件未削弱处面积，A0:挂件削弱处面积，Wx:截面模量，Ae:螺栓截面面积
+                </div>
+
+                <div class="input-grid" style="margin-top:15px;">
+                    <div class="input-group"><label>Lim Shear (挂件抗剪强度设计值)</label><input type="number" id="limit-shear"
+                            value="125">
+                    </div>
+                    <div class="input-group"><label>Lim Bend (挂件抗拉强度设计值)</label><input type="number" id="limit-bend"
+                            value="215">
+                    </div>
+                    <div class="input-group"><label>Lim Bolt T (螺栓抗拉强度设计值)</label><input type="number" id="limit-bolt-t"
+                            value="400"></div>
+                    <div class="input-group"><label>Lim Bolt V (螺栓抗剪强度设计值)</label><input type="number" id="limit-bolt-v"
+                            value="320"></div>
+                </div>
+            </div>
+
+            <!-- Section 5 Beam -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">| 5. TRANSVERSE BEAM (横梁)</div>
+                <div class="input-grid">
+                    <div class="input-group"><label>Span (mm)</label><input type="number" id="beam-span" value="1200">
+                    </div>
+                    <div class="input-group"><label>Mx (kN.m)</label><input type="number" id="beam-mx" value="1.5">
+                    </div>
+                    <div class="input-group"><label>My (kN.m)</label><input type="number" id="beam-my" value="0.5">
+                    </div>
+                    <div class="input-group"><label>Wx (mm3)</label><input type="number" id="beam-wx" value="20000">
+                    </div>
+                    <div class="input-group"><label>Wy (mm3)</label><input type="number" id="beam-wy" value="5000">
+                    </div>
+                    <div class="input-group"><label>Gamma</label><input type="number" id="beam-gamma" value="1.05">
+                    </div>
+                    <div class="input-group"><label>Dx (mm)</label><input type="number" id="beam-dx" value="1.0"></div>
+                    <div class="input-group"><label>Dy (mm)</label><input type="number" id="beam-dy" value="0.5"></div>
+                    <input type="hidden" id="beam-ix" value="1000000">
+                </div>
+            </div>
+
+            <!-- Section 6 Anchor -->
+            <!-- Section 6: Connection (Connection Weld) -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">| 6. CONNECTION (连接焊缝)</div>
+                <div class="input-grid">
+                    <div class="input-group"><label>L1 (Horz) mm 水平焊缝实际长度</label><input type="number"
+                            id="weld-l1-actual" value="72">
+                    </div>
+                    <div class="input-group"><label>L1 (Horz) mm 水平焊缝计算长度</label><input type="number" id="weld-l1"
+                            value="60">
+                    </div>
+                    <div class="input-group"><label>L2 (Vert) mm 竖向焊缝实际长度</label><input type="number"
+                            id="weld-l2-actual" value="112">
+                    </div>
+                    <div class="input-group"><label>L2 (Vert) mm 竖向焊缝计算长度</label><input type="number" id="weld-l2"
+                            value="100">
+                    </div>
+                    <div class="input-group"><label>hf (Size) mm</label><input type="number" id="weld-hf" value="5">
+                    </div>
+                    <div class="input-group"><label>he (Eff) mm (焊缝计算高度)</label><input type="number" id="weld-he"
+                            value="3.5">
+                    </div>
+                    <script>
+                        (function () {
+                            // Wait for DOM to be ready if needed, or just run immediately if at bottom of body
+                            // Since this is inside sidebar, it runs when parsed. 
+
+                            function initWeldCalc() {
+                                const l1ActualInp = document.getElementById('weld-l1-actual');
+                                const l2ActualInp = document.getElementById('weld-l2-actual');
+                                const l1Inp = document.getElementById('weld-l1');
+                                const l2Inp = document.getElementById('weld-l2');
+                                const hfInp = document.getElementById('weld-hf');
+
+                                if (!l1ActualInp || !l1Inp || !l2ActualInp || !l2Inp || !hfInp) return;
+
+                                function calc() {
+                                    const hf = parseFloat(hfInp.value) || 0;
+                                    const l1Act = parseFloat(l1ActualInp.value) || 0;
+                                    const l2Act = parseFloat(l2ActualInp.value) || 0;
+
+                                    // L_calc = L_act - 2*hf
+                                    const l1Calc = Math.max(0, l1Act - 2 * hf);
+                                    const l2Calc = Math.max(0, l2Act - 2 * hf);
+
+                                    l1Inp.value = Number.isInteger(l1Calc) ? l1Calc : l1Calc.toFixed(2);
+                                    l2Inp.value = Number.isInteger(l2Calc) ? l2Calc : l2Calc.toFixed(2);
+
+                                    // Trigger input event on L1/L2 so that the main calculation (if any listens to them) updates
+                                    l1Inp.dispatchEvent(new Event('input', { bubbles: true }));
+                                    l2Inp.dispatchEvent(new Event('input', { bubbles: true }));
+                                }
+
+                                l1ActualInp.addEventListener('input', calc);
+                                l2ActualInp.addEventListener('input', calc);
+                                hfInp.addEventListener('input', calc);
+
+                                // Initial calc
+                                calc();
+                            }
+
+                            // Use timeout to ensure elements exist
+                            setTimeout(initWeldCalc, 100);
+                        })();
+                    </script>
+                    <div class="input-group"><label>Nx (Horz) kN 恒荷载支座反力</label><input type="number" id="weld-nx"
+                            value="5.0">
+                    </div>
+                    <div class="input-group"><label>Vy (Vert) kN 活荷载支座反力</label><input type="number" id="weld-vy"
+                            value="2.0">
+                    </div>
+                    <div class="input-group"><label>Beta_f</label><input type="number" id="weld-bf" value="1.22"></div>
+                    <div class="input-group"><label>fw (Str) MPa 焊缝强度设计值</label><input type="number" id="weld-fw"
+                            value="160">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Column (Upright Column) -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">| 7. COLUMN (立柱)</div>
+                <div class="input-group" style="margin-bottom:10px;">
+                    <label>Profile Name</label>
+                    <input type="text" id="col-profile" value="120x60x4"
+                        style="width:100%; padding:5px; border:1px solid #d1d5db; border-radius:4px;">
+                </div>
+                <div class="input-grid">
+                    <div class="input-group"><label>Pitch (分格) mm 水平分格宽度</label><input type="number" id="col-pitch"
+                            value="1200"></div>
+                    <div class="input-group"><label>Span (跨度) mm</label><input type="number" id="col-span" value="3800">
+                    </div>
+                    <div class="input-group"><label>M (Bend) kN.m</label><input type="number" id="col-m" value="2.5">
+                    </div>
+
+                    <div class="input-group"><label>Area (mm2)</label><input type="number" id="col-area" value="1500">
+                    </div>
+                    <div class="input-group"><label>Wx (mm3)</label><input type="number" id="col-wx" value="35000">
+                    </div>
+                    <div class="input-group"><label>Gamma</label><input type="number" id="col-gamma" value="1.05"></div>
+                    <div class="input-group"><label>H_Total (m) 立柱总高度</label><input type="number" id="col-h-total"
+                            value="24.0"></div>
+                    <div class="input-group"><label>Defl_Act (mm) 实际挠度</label><input type="number" id="col-defl-act"
+                            value="8.5"></div>
+                </div>
+            </div>
+
+
+
+
+
+            <div style="height:50px;"></div>
+        </div>
+
+        <!-- MAIN REPORT CONTENT -->
+        <div class="main-content">
+            <header class="report-header">
+                <div class="app-icon">📐</div>
+                <div class="app-title">StoneCalc Pro</div>
+                <div class="app-subtitle">Advanced Stone Cladding Calculation Suite</div>
+                <input type="text" id="inp-project-title" value="xxxx石材幕墙计算书"
+                    style="font-size:1.5rem; font-weight:bold; color:#374151; margin-top:5px; border:1px solid transparent; background:transparent; text-align:center; width:100%; max-width:600px; outline:none; padding:4px; border-radius:4px;"
+                    onfocus="this.style.borderColor='#e5e7eb'; this.style.background='#ffffff'"
+                    onblur="this.style.borderColor='transparent'; this.style.background='transparent'">
+
+                <div class="header-actions">
+                    <div class="badge-verified">
+                        <div class="badge-dot"></div>VERIFIED
+                    </div>
+                    <button class="btn-action" id="btn-save">SAVE SNAPSHOT</button>
+                    <button class="btn-action secondary" id="btn-export">EXPORT WORD</button>
+                </div>
+                <div class="project-info" style="display:none;"><span class="project-title-input">SC-2023-001</span>
+                </div>
+            </header>
+
+            <!-- Section 1 -->
+            <div class="report-section">
+                <div class="sec-header">
+                    <div class="sec-bullet"></div>
+                    <div class="sec-title">第一节 系统说明</div>
+                    <div class="sec-subtitle">SECTION 1: SYSTEM DESCRIPTION</div>
+                </div>
+                <textarea id="txt-system-desc"
+                    class="desc-box system-desc">本工程石材为25mm厚石材，最大计算分格为1275mm（宽）×1200mm（高），采用四点的背栓固定方式，最大计算标高为11.48米，钢架立柱最大计算标高为13.65m。</textarea>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="report-section">
+                <div class="sec-header">
+                    <div class="sec-bullet"></div>
+                    <div class="sec-title">第二节 幕墙荷载说明</div>
+                    <div class="sec-subtitle">SECTION 2: LOAD ANALYSIS (荷载分析)</div>
+                </div>
+                <div class="res-grid-col">
+                    <!-- Gk -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-gk', 'gk', '石材面板自重标准值 Gk')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">石材面板自重标准值 Gk</div>
+                            <div class="header-value" id="res-gk">--</div>
+                            <div class="header-unit">kN/m²</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-gk" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- Gd -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-gd', 'gd', '石材面板自重设计值 Gd')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">石材面板自重设计值 Gd</div>
+                            <div class="header-value" id="res-gd">--</div>
+                            <div class="header-unit">kN/m²</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-gd" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- GGK -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-ggk', 'ggk', '综合重力荷载标准值 GGK')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">综合重力荷载标准值 GGK</div>
+                            <div class="header-value" id="res-ggk">--</div>
+                            <div class="header-unit">kN/m²</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-ggk" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- G -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-g', 'g', '综合重力荷载设计值 G')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">综合重力荷载设计值 G</div>
+                            <div class="header-value" id="res-g">--</div>
+                            <div class="header-unit">kN/m²</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-g" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- qEk -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-qek', 'qEk', '地震荷载标准值 qEk')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">地震荷载标准值 qEk</div>
+                            <div class="header-value" id="res-qek">--</div>
+                            <div class="header-unit">kN/m²</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-qek" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- qE -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-qe', 'qE', '地震荷载设计值 qE')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">地震荷载设计值 qE</div>
+                            <div class="header-value" id="res-qe">--</div>
+                            <div class="header-unit">kN/m²</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-qe" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="report-section">
+                <div class="sec-header">
+                    <div class="sec-bullet"></div>
+                    <div class="sec-title">第三节 石材面板计算</div>
+                    <div class="sec-subtitle">SECTION 3: STONE PANEL CHECK (面板验算)</div>
+                </div>
+
+                <!-- Design Note Blue Box -->
+                <div id="design-note-box"
+                    style="background:#eff6ff; border:1px solid #dbeafe; padding:15px; border-radius:8px; display:flex; gap:10px; align-items:center; margin-bottom:20px;">
+                    <div
+                        style="background:#3b82f6; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; flex-shrink:0;">
+                        i</div>
+                    <div id="design-note-text" style="color:#1e40af; font-size:14px;">
+                        计算说明 (Design Note): 四点支撑计算 (Back Bolt)。计算跨度a0=1220mm, b0=887mm.
+                    </div>
+                </div>
+
+                <!-- Schematic -->
+                <div
+                    style="border:1px solid #e5e7eb; border-radius:8px; padding:20px; text-align:center; margin-bottom:20px;">
+                    <div id="schematic-title"
+                        style="font-size:0.75rem; color:#9ca3af; margin-bottom:15px; text-transform:uppercase; font-weight:700;">
+                        BACK BOLT SCHEMATIC</div>
+                    <div id="stone-svg-wrapper" style="width:100%; max-width:500px; margin:0 auto; height:200px;"></div>
+                </div>
+
+                <!-- Results Grid -->
+                <div class="res-grid-col">
+
+                    <!-- mb0 Coefficient -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-mb0', 'mb0', '弯矩系数 mb0')">
+                        <div class="card-header-row">
+                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                            <div class="header-label">弯矩系数 mb0 (Bending Moment Coeff)</div>
+                            <div class="header-value" id="res-mb0">--</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-mb0" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- Max Stress (Sigma) -->
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-sigma', 'sigma', '最大弯曲应力 σ')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">最大弯曲应力 σ (Max Bending Stress)</div>
+                            <div class="header-value" id="res-sigma">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-sigma" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- BACK BOLT RESULTS GROUP -->
+                    <div id="res-group-backbolt">
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-tau-pos', 'tau_pos', '正风压剪应力 τ_pos')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">正风压剪应力 τ_pos (Pos. Wind Shear)</div>
+                                <div class="header-value" id="res-tau-pos">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-tau-pos" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-tau-neg', 'tau_neg', '负风压剪应力 τ_neg')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">负风压剪应力 τ_neg (Neg. Wind Shear)</div>
+                                <div class="header-value" id="res-tau-neg">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-tau-neg" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+                    </div>
+
+                    <!-- KERF RESULTS GROUP -->
+                    <div id="res-group-kerf" style="display:none;">
+                        <div class="res-card-full" onclick="showCalcDetail('calc-box-tau-kerf', 'tau_kerf', '剪应力 τ')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">剪应力 τ (Shear Stress)</div>
+                                <div class="header-value" id="res-tau-kerf">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-tau-kerf" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Section 4 (RESTRUCTURED) -->
+            <div class="report-section">
+                <div class="sec-header">
+                    <div class="sec-bullet"></div>
+                    <div class="sec-title">第四节 挂件及背栓计算</div>
+                    <div class="sec-subtitle">SECTION 4: HANGER &
+                        BOLT (挂件详参)</div>
+                </div>
+                <!-- BOLT DESCRIPTION -->
+                <textarea id="txt-bolt-desc" class="desc-box"
+                    style="margin-bottom:20px;">铝合金T5背栓挂件承受石材板块的自重荷载和水平方向的地震的组合荷载。材质为铝合金的背栓挂件，其计算强度：抗拉强度设计值​=85.5 N/mm2，抗剪强度设计值=49.6 N/mm2。</textarea>
+
+                <!-- Hanger Section Calculator -->
+                <div id="hanger-section-calc-container"
+                    style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-bottom:25px; display:flex; gap:20px; flex-wrap:wrap;">
+                    <!-- Left: Canvas -->
+                    <div style="flex:1; min-width:300px; display:flex; flex-direction:column; align-items:center;">
+                        <div style="font-weight:bold; margin-bottom:10px; color:#475569;">Rect Section Schematic (截面示意图)
+                        </div>
+                        <canvas id="hanger-sec-canvas" width="300" height="300"
+                            style="background:#fff; border:1px solid #cbd5e1; border-radius:4px;"></canvas>
+                    </div>
+
+                    <!-- Right: Inputs & Results -->
+                    <div style="flex:1; min-width:300px;">
+                        <div style="font-weight:bold; margin-bottom:10px; color:#475569;">Parameters & Properties (截面参数)
+                        </div>
+
+                        <!-- Inputs -->
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label>Height H (mm)</label>
+                                <div class="input-wrapper"><input type="number" id="inp-sec4-h" value="5"></div>
+                            </div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label>Width B (mm)</label>
+                                <div class="input-wrapper"><input type="number" id="inp-sec4-b" value="50"></div>
+                            </div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label>Thick Vert tw (mm)</label>
+                                <div class="input-wrapper"><input type="number" id="inp-sec4-tw" value="20.5"></div>
+                            </div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label>Thick Horz tf (mm)</label>
+                                <div class="input-wrapper"><input type="number" id="inp-sec4-tf" value="0"></div>
+                            </div>
+                        </div>
+
+                        <!-- Results Table -->
+                        <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:center;">
+                            <thead style="background:#eff6ff; color:#1e40af; font-weight:bold;">
+                                <tr>
+                                    <td style="padding:6px; border:1px solid #bfdbfe;">Property</td>
+                                    <td style="padding:6px; border:1px solid #bfdbfe;">Value</td>
+                                    <td style="padding:6px; border:1px solid #bfdbfe;">Unit</td>
+                                </tr>
+                            </thead>
+                            <tbody id="sec4-results-body">
+                                <!-- Populated by JS -->
+                                <tr>
+                                    <td style="border:1px solid #e2e8f0; padding:4px;">Area A</td>
+                                    <td id="res-sec4-a"
+                                        style="border:1px solid #e2e8f0; font-family:monospace; font-weight:bold;">--
+                                    </td>
+                                    <td style="border:1px solid #e2e8f0;">mm²</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #e2e8f0; padding:4px;">Inertia Ix</td>
+                                    <td id="res-sec4-ix"
+                                        style="border:1px solid #e2e8f0; font-family:monospace; font-weight:bold;">--
+                                    </td>
+                                    <td style="border:1px solid #e2e8f0;">mm⁴</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #e2e8f0; padding:4px;">Inertia Iy</td>
+                                    <td id="res-sec4-iy"
+                                        style="border:1px solid #e2e8f0; font-family:monospace; font-weight:bold;">--
+                                    </td>
+                                    <td style="border:1px solid #e2e8f0;">mm⁴</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #e2e8f0; padding:4px;">Radius ix</td>
+                                    <td id="res-sec4-rx" style="border:1px solid #e2e8f0; font-family:monospace;">--
+                                    </td>
+                                    <td style="border:1px solid #e2e8f0;">mm</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #e2e8f0; padding:4px;">Radius iy</td>
+                                    <td id="res-sec4-ry" style="border:1px solid #e2e8f0; font-family:monospace;">--
+                                    </td>
+                                    <td style="border:1px solid #e2e8f0;">mm</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #e2e8f0; padding:4px;">Wx (Top)</td>
+                                    <td id="res-sec4-wx" style="border:1px solid #e2e8f0; font-family:monospace;">--
+                                    </td>
+                                    <td style="border:1px solid #e2e8f0;">mm³</td>
+                                </tr>
+                                <tr>
+                                    <td style="border:1px solid #e2e8f0; padding:4px;">Wy (Left)</td>
+                                    <td id="res-sec4-wy" style="border:1px solid #e2e8f0; font-family:monospace;">--
+                                    </td>
+                                    <td style="border:1px solid #e2e8f0;">mm³</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 1. Loads -->
+                <div class="sub-section" style="margin-bottom:25px;">
+                    <div
+                        style="border-left:3px solid #bfdbfe; padding-left:10px; margin-bottom:15px; font-weight:700; color:#374151;">
+                        1. 挂件荷载计算 (HANGER LOADS)
+                        <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+                            <label style="font-size:0.75rem; color:#6b7280;">Div_Vert:</label>
+                            <input type="number" id="inp-load-div-vert" value="2"
+                                style="width:40px; padding:2px; border:1px solid #d1d5db; border-radius:4px; text-align:center; font-size:0.8rem;">
+                            <label style="font-size:0.75rem; color:#6b7280;">Div_Horz:</label>
+                            <input type="number" id="inp-load-div-horz" value="4"
+                                style="width:40px; padding:2px; border:1px solid #d1d5db; border-radius:4px; text-align:center; font-size:0.8rem;">
+                        </div>
+                    </div>
+                    <div class="res-grid-col">
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-p-vert', 'P_vert', '竖向集中荷载 P_vert')">
+                            <div class="card-header-row">
+                                <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                <div class="header-label">竖向集中荷载 P_vert</div>
+                                <div class="header-value" id="res-p-vert">--</div>
+                                <div class="header-unit">kN</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-p-vert" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-p-horz', 'P_horz', '水平集中荷载 P_horz')">
+                            <div class="card-header-row">
+                                <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                <div class="header-label">水平集中荷载 P_horz</div>
+                                <div class="header-value" id="res-p-horz">--</div>
+                                <div class="header-unit">kN</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-p-horz" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Unweakened Shear -->
+                <div class="sub-section" style="margin-bottom:25px;">
+                    <div
+                        style="border-left:3px solid #10b981; padding-left:10px; margin-bottom:15px; font-weight:700; color:#374151;">
+                        2. 未削弱处抗剪 (UNWEAKENED SHEAR)</div>
+                    <div class="res-grid-col">
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-tau-unweak', 'tau_unweak', '挂件翼缘抗剪应力 τ')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">挂件翼缘抗剪应力 τ (Flange Shear)</div>
+                                <div class="header-value" id="res-tau-unweak">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-tau-unweak" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Weakened Section -->
+                <div class="sub-section" style="margin-bottom:25px;">
+                    <div
+                        style="border-left:3px solid #f59e0b; padding-left:10px; margin-bottom:15px; font-weight:700; color:#374151;">
+                        3. 削弱处强度 (WEAKENED SECTION)</div>
+                    <div class="res-grid-col">
+                        <div class="res-card-full" onclick="showCalcDetail('calc-box-m-hanger', 'M_hanger', '挂件弯矩 M')">
+                            <div class="card-header-row">
+                                <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                <div class="header-label">挂件弯矩 M (Bending Moment)</div>
+                                <div class="header-value" id="res-m-hanger">--</div>
+                                <div class="header-unit">kN·m</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-m-hanger" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-sigma-hanger', 'sigma_hanger', '挂件综合应力 σ')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">挂件综合应力 σ (Combined Stress)</div>
+                                <div class="header-value" id="res-sigma-hanger">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-sigma-hanger" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-tau-weak', 'tau_weak', '削弱处抗剪应力 τ')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">削弱处抗剪应力 τ (Weak Point)</div>
+                                <div class="header-value" id="res-tau-weak">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-tau-weak" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Bolt Check -->
+                <div class="sub-section">
+                    <div
+                        style="border-left:3px solid #ef4444; padding-left:10px; margin-bottom:15px; font-weight:700; color:#374151;">
+                        4. 连接螺栓 (CONNECTION BOLT)</div>
+                    <textarea id="txt-conn-bolt-desc" class="desc-box"
+                        style="margin-bottom:15px;">挂件与横梁连接位置采用M8不锈钢螺栓（A2-70），其有效截面积为A=36.6mm2，抗拉强度为295(N/mm2)，抗剪强度为245(N/mm2)。</textarea>
+                    <div class="res-grid-col">
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-sigma-bolt', 'sigma_bolt', '螺栓抗拉应力 σ')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">螺栓抗拉应力 σ (Bolt Tension)</div>
+                                <div class="header-value" id="res-sigma-bolt">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-sigma-bolt" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-tau-bolt', 'tau_bolt', '螺栓抗剪应力 τ')">
+                            <div class="card-header-row">
+                                <div class="res-icon check">✓</div>
+                                <div class="header-label">螺栓抗剪应力 τ (Bolt Shear)</div>
+                                <div class="header-value" id="res-tau-bolt">--</div>
+                                <div class="header-unit">MPa</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-tau-bolt" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div class="report-section">
+                <div class="sec-header">
+                    <div class="sec-bullet"></div>
+                    <div class="sec-title">第五节 横梁计算</div>
+                    <div class="sec-subtitle">SECTION 5: TRANSVERSE
+                        BEAM CHECK</div>
+                </div>
+
+                <textarea id="desc-section-5" class="desc-box"
+                    style="margin-bottom: 15px;">横梁采用L50*5mm角钢，跨度为L=1200mm。</textarea>
+
+                <!-- TOOLBOX BUTTONS INTEGRATION -->
+                <!-- TOOLBOX BUTTONS REMOVED -->
+                <div class="toolbox-entry" style="display:flex; gap:10px;">
+                    <button class="btn-toolbox-entry" onclick="showToolbox(1)"
+                        style="flex:1; justify-content:center; white-space:nowrap;"><span class="icon">■</span> 打开结构工具箱
+                        1 (Toolbox 1) - 1.3恒荷载</button>
+                    <button class="btn-toolbox-entry" onclick="showToolbox2(2)"
+                        style="flex:1; justify-content:center; white-space:nowrap; border-left:4px solid #a855f7;"><span
+                            class="icon" style="color:#a855f7;">⚡</span> 打开结构工具箱 2 (Toolbox 2) - 1.4地震荷载</button>
+                </div>
+
+                <!-- External Results Display -->
+                <div class="toolbox-results-row" style="display:flex; gap:10px; margin-top:10px;">
+                    <!-- Toolbox 1 Results -->
+                    <div id="ext-res-tb1"
+                        style="flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px; font-size:0.8rem;">
+                        <div
+                            style="color:#64748b; margin-bottom:8px; font-weight:700; display:flex; justify-content:space-between;">
+                            <span>Toolbox 1 结果</span>
+                            <span style="font-weight:400; font-size:0.7rem;">(Status: <span
+                                    id="ext-tb1-status">Idle</span>)</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px 15px;">
+                            <div style="display:flex; justify-content:space-between;"><span>M_max:</span> <strong
+                                    id="ext-tb1-m" style="color:#ef4444;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>V_max:</span> <strong
+                                    id="ext-tb1-v" style="color:#10b981;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>R_max:</span> <strong
+                                    id="ext-tb1-r" style="color:#3b82f6;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Deflect:</span> <strong
+                                    id="ext-tb1-def" style="color:#f97316;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wx(Top):</span> <strong
+                                    id="ext-tb1-wx-t" style="color:#4b5563;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wx(Bot):</span> <strong
+                                    id="ext-tb1-wx-b" style="color:#4b5563;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wy(L):</span> <strong
+                                    id="ext-tb1-wy-l" style="color:#4b5563;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wy(R):</span> <strong
+                                    id="ext-tb1-wy-r" style="color:#4b5563;">--</strong></div>
+                        </div>
+                    </div>
+                    <!-- Toolbox 2 Results -->
+                    <div id="ext-res-tb2"
+                        style="flex:1; background:#faf5ff; border:1px solid #e9d5ff; border-radius:6px; padding:10px; font-size:0.8rem;">
+                        <div
+                            style="color:#7e22ce; margin-bottom:8px; font-weight:700; display:flex; justify-content:space-between;">
+                            <span>Toolbox 2 结果</span>
+                            <span style="font-weight:400; font-size:0.7rem;">(Status: <span
+                                    id="ext-tb2-status">Idle</span>)</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px 15px;">
+                            <div style="display:flex; justify-content:space-between;"><span>M_max:</span> <strong
+                                    id="ext-tb2-m" style="color:#ef4444;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>V_max:</span> <strong
+                                    id="ext-tb2-v" style="color:#10b981;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>R_max:</span> <strong
+                                    id="ext-tb2-r" style="color:#3b82f6;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Deflect:</span> <strong
+                                    id="ext-tb2-def" style="color:#f97316;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wx(Top):</span> <strong
+                                    id="ext-tb2-wx-t" style="color:#4b5563;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wx(Bot):</span> <strong
+                                    id="ext-tb2-wx-b" style="color:#4b5563;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wy(L):</span> <strong
+                                    id="ext-tb2-wy-l" style="color:#4b5563;">--</strong></div>
+                            <div style="display:flex; justify-content:space-between;"><span>Wy(R):</span> <strong
+                                    id="ext-tb2-wy-r" style="color:#4b5563;">--</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:10px; font-size:0.8rem; color:#6b7280; font-style:italic;">
+                    * 点击上方按钮进入高级连续梁计算模块
+                </div>
+
+                <div class="res-grid" style="margin-top:20px;">
+                    <div class="res-card" onclick="updateSection5Steps('sigma')" style="cursor:pointer;"
+                        title="Click for details">
+                        <div class="res-icon">i</div>
+                        <div class="res-content">
+                            <div class="res-label">横梁弯曲应力 σ</div>
+                            <div><span class="res-value" id="res-beam-sigma">--</span><span class="res-unit">MPa</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="res-card" onclick="updateSection5Steps('def')" style="cursor:pointer;"
+                        title="Click for details">
+                        <div class="res-icon">i</div>
+                        <div class="res-content">
+                            <div class="res-label">横梁综合挠度 f</div>
+                            <div><span class="res-value" id="res-beam-def">--</span><span class="res-unit">mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Expansion Process Box -->
+                <div id="sec5-calc-process" class="calc-process-box"
+                    style="display:none; margin-top:15px; background:#f8fafc; padding:15px; border-radius:8px; border-left:4px solid #3b82f6;">
+                </div>
+            </div>
+
+            <script>
+                function updateSection5Steps(type) {
+                    const box = document.getElementById('sec5-calc-process');
+                    const r = window.currentResults;
+                    if (!r) return;
+
+                    if (box.style.display === 'block' && box.dataset.type === type) {
+                        box.style.display = 'none';
+                        return;
+                    }
+
+                    let html = '';
+                    if (type === 'sigma' && r.sigma_beam) {
+                        const s = r.sigma_beam;
+                        html = `<div style="font-weight:bold; color:#3b82f6; margin-bottom:5px;">弯曲应力计算过程 (Bending Stress Process):</div>
+                                <div class="step-row">Formula: ${s.formula}</div>
+                                <div class="step-row">Step 1: ${s.step1}</div>
+                                <div class="step-row">Step 2: ${s.step2}</div>
+                                <div class="step-row"><strong>Result: ${s.step3}</strong></div>
+                                <div class="step-row" style="color:${s.status ? 'green' : 'red'}">Check: ${s.val.toFixed(2)} <= ${s.limit} (${s.status ? 'Pass' : 'Fail'})</div>`;
+                    } else if (type === 'def' && r.def_beam) {
+                        const d = r.def_beam;
+                        html = `<div style="font-weight:bold; color:#f97316; margin-bottom:5px;">综合挠度计算过程 (Deflection Process):</div>
+                                <div class="step-row">Formula: ${d.formula}</div>
+                                <div class="step-row">Step 1: ${d.step1}</div>
+                                <div class="step-row"><strong>Result: ${d.step2}</strong></div>
+                                <div class="step-row">Limit: ${d.limitStep}</div>
+                                <div class="step-row" style="color:${d.status ? 'green' : 'red'}">Check: ${d.val.toFixed(2)} <= ${d.limit.toFixed(2)} (${d.status ? 'Pass' : 'Fail'})</div>`;
+                    }
+                    box.innerHTML = html;
+                    box.style.display = 'block';
+                    box.dataset.type = type;
+                }
+            </script>
+
+            <!-- Section 6: Connection Weld -->
+            <div class="report-section">
+                <div class="sec-header">
+                    <div class="sec-bullet"></div>
+                    <div class="sec-title">第六节 横梁与立柱连接计算</div>
+                    <div class="sec-subtitle">SECTION 6: BEAM-COLUMN CONNECTION (梁柱连接)</div>
+                </div>
+
+                <div
+                    style="margin-bottom:15px; font-size:0.9rem; color:#6b7280; background:#f9fafb; padding:10px; border-radius:6px; border:1px dashed #e5e7eb;">
+                    <strong>荷载说明 (Load Note):</strong> <span id="note-weld-loads">焊缝所受力: 水平力 Nx=--kN，竖直力
+                        Vy=--kN。分别校核水平焊缝与竖向焊缝 (Checking both Horizontal and Vertical Welds).</span>
+                </div>
+
+                <div class="res-grid-col">
+                    <!-- Horizontal Weld -->
+                    <div class="res-card-full"
+                        onclick="showCalcDetail('calc-box-weld-h-sigma', 'res_weld_h_sigma', '水平焊缝正应力 σ')">
+                        <div class="card-header-row">
+                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                            <div class="header-label">水平焊缝正应力 σ (Horz Weld Normal Stress)</div>
+                            <div class="header-value" id="res-weld-h-sigma">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-weld-h-sigma" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <div class="res-card-full"
+                        onclick="showCalcDetail('calc-box-weld-h-tau', 'res_weld_h_tau', '水平焊缝剪应力 τ')">
+                        <div class="card-header-row">
+                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                            <div class="header-label">水平焊缝剪应力 τ (Horz Weld Shear Stress)</div>
+                            <div class="header-value" id="res-weld-h-tau">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-weld-h-tau" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <div class="res-card-full"
+                        onclick="showCalcDetail('calc-box-weld-h-comb', 'res_weld_h_comb', '水平焊缝综合应力')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">水平焊缝综合应力 (Horz Weld Combined Stress)</div>
+                            <div class="header-value" id="res-weld-h-comb">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-weld-h-comb" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <!-- Vertical Weld -->
+                    <div class="res-card-full"
+                        onclick="showCalcDetail('calc-box-weld-v-sigma', 'res_weld_v_sigma', '竖向焊缝正应力 σ')">
+                        <div class="card-header-row">
+                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                            <div class="header-label">竖向焊缝正应力 σ (Vert Weld Normal Stress)</div>
+                            <div class="header-value" id="res-weld-v-sigma">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-weld-v-sigma" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <div class="res-card-full"
+                        onclick="showCalcDetail('calc-box-weld-v-tau', 'res_weld_v_tau', '竖向焊缝剪应力 τ')">
+                        <div class="card-header-row">
+                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                            <div class="header-label">竖向焊缝剪应力 τ (Vert Weld Shear Stress)</div>
+                            <div class="header-value" id="res-weld-v-tau">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-weld-v-tau" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <div class="res-card-full"
+                        onclick="showCalcDetail('calc-box-weld-v-comb', 'res_weld_v_comb', '竖向焊缝综合应力')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">竖向焊缝综合应力 (Vert Weld Combined Stress)</div>
+                            <div class="header-value" id="res-weld-v-comb">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-weld-v-comb" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+                </div>
+                <!-- Unified Calculation Details Box for Section 6 -->
+                <div id="sec6-calc-box" class="calc-process-box"
+                    style="display:none; margin-top:15px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                </div>
+            </div>
+
+            <!-- Section 7: Column -->
+            <div class="report-section">
+                <div class="sec-header">
+                    <div class="sec-bullet"></div>
+                    <div class="sec-title">第七节 立柱计算</div>
+                    <div class="sec-subtitle">SECTION 7: UPRIGHT COLUMN (立柱)</div>
+                </div>
+
+                <textarea id="desc-section-7" class="desc-box"
+                    style="margin-bottom: 15px;">立柱选用80*60*3mm热镀锌方钢，立柱计算模型为连续梁，立柱在组合荷载的作用下，产生弯曲、剪切等效应。立柱受到的荷载按承受水平方向荷载和自重荷载考虑。为简化计算，立柱跨度H=13650mm，石材板块水平分格B=1200mm。</textarea>
+
+                <!-- TOOLBOX 3 BUTTON INTEGRATION -->
+                <div class="toolbox-entry" style="display:flex; gap:10px; margin-bottom: 15px;">
+                    <button class="btn-toolbox-entry" onclick="showToolbox3(3)"
+                        style="flex:1; justify-content:center; white-space:nowrap; border-left:4px solid #f97316;"><span
+                            class="icon" style="color:#f97316;">🧰</span> 打开结构工具箱 3 (Toolbox 3) - 1.4地震荷载</button>
+                </div>
+
+                <!-- Toolbox 3 Results -->
+                <div id="ext-res-tb3"
+                    style="background:#fff7ed; border:1px solid #ffedd5; border-radius:6px; padding:10px; font-size:0.8rem; margin-bottom: 15px;">
+                    <div
+                        style="color:#c2410c; margin-bottom:8px; font-weight:700; display:flex; justify-content:space-between;">
+                        <span>Toolbox 3 结果</span>
+                        <span style="font-weight:400; font-size:0.7rem;">(Status: <span
+                                id="ext-tb3-status">Idle</span>)</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap:10px;">
+                        <div style="display:flex; flex-direction:column;"><span>M_max:</span> <strong id="ext-tb3-m"
+                                style="color:#ef4444;">--</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>V_max:</span> <strong id="ext-tb3-v"
+                                style="color:#10b981;">--</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>R_max:</span> <strong id="ext-tb3-r"
+                                style="color:#3b82f6;">--</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Deflect:</span> <strong id="ext-tb3-def"
+                                style="color:#f97316;">--</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Wx(Top):</span> <strong
+                                id="ext-tb3-wx-t" style="color:#4b5563;">--</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Wx(Bot):</span> <strong
+                                id="ext-tb3-wx-b" style="color:#4b5563;">--</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Wy(L):</span> <strong id="ext-tb3-wy-l"
+                                style="color:#4b5563;">--</strong></div>
+                        <div style="display:flex; flex-direction:column;"><span>Wy(R):</span> <strong id="ext-tb3-wy-r"
+                                style="color:#4b5563;">--</strong></div>
+                    </div>
+                </div>
+
+                <div
+                    style="background:#f3f4f6; padding:8px 15px; border-radius:6px; margin-bottom:15px; font-size:0.85rem; display:flex; gap:15px; flex-wrap:wrap;">
+                    <span>截面 (Profile): <strong id="disp-col-profile">--</strong></span>
+                    <span>计算跨度 (Calc Span): <strong id="disp-col-span">--</strong> mm</span>
+                    <span>分格宽 B (Pitch): <strong id="disp-col-pitch">--</strong> mm</span>
+                </div>
+
+                <!-- 1. Horizontal Line Load Calculation -->
+                <div class="sub-section" style="margin-bottom:25px;">
+                    <div
+                        style="border-left:3px solid #f59e0b; padding-left:10px; margin-bottom:15px; font-weight:700; color:#374151;">
+                        1. 水平线荷载计算 (HORIZONTAL LINE LOAD)</div>
+                    <div class="res-grid-col">
+                        <div class="res-card-full"
+                            onclick="showCalcDetail('calc-box-col-q-line', 'q_line', '水平线荷载设计值 q_line')">
+                            <div class="card-header-row">
+                                <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                <div class="header-label">水平线荷载设计值 q_line</div>
+                                <div class="header-value" id="res-col-q-line">--</div>
+                                <div class="header-unit">kN/m</div>
+                                <div class="chevron">▼</div>
+                            </div>
+                        </div>
+                        <div id="calc-box-col-q-line" class="calc-process-box"
+                            style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="res-grid-col">
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-col-n', 'res_col_n', '最为不利位置受力 N')">
+                        <div class="card-header-row">
+                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                            <div class="header-label">最为不利位置受力 N (Axial Force)</div>
+                            <div class="header-value" id="res-col-n">--</div>
+                            <div class="header-unit">kN</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-col-n" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <div class="res-card-full"
+                        onclick="showCalcDetail('calc-box-col-sigma', 'res_col_sigma', '立柱弯曲+轴压应力')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">立柱弯曲+轴压应力 (Axial + Bending Stress)</div>
+                            <div class="header-value" id="res-col-sigma">--</div>
+                            <div class="header-unit">MPa</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-col-sigma" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+
+                    <div class="res-card-full" onclick="showCalcDetail('calc-box-col-def', 'res_col_def', '立柱挠度校核')">
+                        <div class="card-header-row">
+                            <div class="res-icon check">✓</div>
+                            <div class="header-label">立柱挠度校核 (Deflection Check)</div>
+                            <div class="header-value" id="res-col-def">--</div>
+                            <div class="header-unit">mm</div>
+                            <div class="chevron">▼</div>
+                        </div>
+                    </div>
+                    <div id="calc-box-col-def" class="calc-process-box"
+                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                    </div>
+                </div>
+
+
+                <!-- Section 8: Anchor & Embed (Updated) -->
+                <div class="report-section" id="sec-8-anchor">
+                    <div class="sec-header">
+                        <div class="sec-bullet"></div>
+                        <div class="sec-title">第八节 螺栓拉拔计算</div>
+                        <div class="sec-subtitle">SECTION 8: ANCHOR CONNECTION (埋件)</div>
+                    </div>
+
+                    <!-- Control & Interaction Area -->
+                    <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+
+                        <!-- LEFT PANEL: Controls & Visualization -->
+                        <div
+                            style="flex:1; min-width:350px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border:1px solid #f1f5f9;">
+
+                            <!-- Mode Toggle -->
+                            <div
+                                style="display:flex; background:#f1f5f9; padding:4px; border-radius:8px; margin-bottom:20px;">
+                                <button id="btn-anchor-mode-diag" class="anchor-mode-btn active"
+                                    onclick="setAnchorMode('diagonal')">
+                                    DIAGONAL (带斜撑)
+                                </button>
+                                <button id="btn-anchor-mode-nod" class="anchor-mode-btn"
+                                    onclick="setAnchorMode('nodiagonal')">
+                                    NO DIAGONAL (无斜撑)
+                                </button>
+                            </div>
+
+                            <!-- Diagram Container -->
+                            <div id="anchor-diagram-container"
+                                style="width:100%; height:260px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px; position:relative; overflow:hidden;">
+                                <!-- SVG will be injected here -->
+                            </div>
+
+                            <!-- Inputs Grid -->
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                                <!-- Common Inputs -->
+                                <div>
+                                    <div
+                                        style="font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:5px; text-transform:uppercase;">
+                                        Horz F (水平力)</div>
+                                    <div
+                                        style="display:flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px;">
+                                        <input type="number" id="inp-anchor-f" value="2.7"
+                                            style="width:100%; padding:8px 0; border:none; background:transparent; font-weight:600; color:#334155;">
+                                        <span style="font-size:0.75rem; color:#64748b; font-weight:600;">kN</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div
+                                        style="font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:5px; text-transform:uppercase;">
+                                        Vert G (竖向力)</div>
+                                    <div
+                                        style="display:flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px;">
+                                        <input type="number" id="inp-anchor-g" value="4.6"
+                                            style="width:100%; padding:8px 0; border:none; background:transparent; font-weight:600; color:#334155;">
+                                        <span style="font-size:0.75rem; color:#64748b; font-weight:600;">kN</span>
+                                    </div>
+                                </div>
+
+                                <!-- Diagonal Specific -->
+                                <div class="grp-anchor-diag">
+                                    <div
+                                        style="font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:5px; text-transform:uppercase;">
+                                        Angle (斜撑角度)</div>
+                                    <div
+                                        style="display:flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px;">
+                                        <input type="number" id="inp-anchor-angle" value="45"
+                                            style="width:100%; padding:8px 0; border:none; background:transparent; font-weight:600; color:#334155;">
+                                        <span style="font-size:0.75rem; color:#64748b; font-weight:600;">deg</span>
+                                    </div>
+                                </div>
+                                <div class="grp-anchor-diag">
+                                    <div
+                                        style="font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:5px; text-transform:uppercase;">
+                                        Weld Len (焊缝长)</div>
+                                    <div
+                                        style="display:flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px;">
+                                        <input type="number" id="inp-anchor-weld-len" value="146"
+                                            style="width:100%; padding:8px 0; border:none; background:transparent; font-weight:600; color:#334155;">
+                                        <span style="font-size:0.75rem; color:#64748b; font-weight:600;">mm</span>
+                                    </div>
+                                </div>
+
+                                <!-- No Diagonal Specific -->
+                                <div class="grp-anchor-nod" style="display:none;">
+                                    <div
+                                        style="font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:5px; text-transform:uppercase;">
+                                        Dist L1 (G-Wall)</div>
+                                    <div
+                                        style="display:flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px;">
+                                        <input type="number" id="inp-anchor-l1" value="162"
+                                            style="width:100%; padding:8px 0; border:none; background:transparent; font-weight:600; color:#334155;">
+                                        <span style="font-size:0.75rem; color:#64748b; font-weight:600;">mm</span>
+                                    </div>
+                                </div>
+                                <div class="grp-anchor-nod" style="display:none;">
+                                    <div
+                                        style="font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:5px; text-transform:uppercase;">
+                                        Dist L2 (Bolt-Cen)</div>
+                                    <div
+                                        style="display:flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px;">
+                                        <input type="number" id="inp-anchor-l2" value="34.5"
+                                            style="width:100%; padding:8px 0; border:none; background:transparent; font-weight:600; color:#334155;">
+                                        <span style="font-size:0.75rem; color:#64748b; font-weight:600;">mm</span>
+                                    </div>
+                                </div>
+
+                                <!-- Row 3: Bolt Count (Common) & Advanced -->
+                                <div style="grid-column: span 2;">
+                                    <div
+                                        style="font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:5px; text-transform:uppercase;">
+                                        Bolt Count (螺栓数量)</div>
+                                    <div
+                                        style="display:flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px;">
+                                        <input type="number" id="inp-anchor-bolt-n" value="2"
+                                            style="width:100%; padding:8px 0; border:none; background:transparent; font-weight:600; color:#334155;">
+                                    </div>
+                                </div>
+
+                                <!-- Hidden/Advanced Inputs for consistency with existing inputs logic -->
+                                <input type="hidden" id="inp-anchor-slant-area" value="564">
+                                <!-- Slant Member Area -->
+                                <input type="hidden" id="inp-anchor-weld-leg" value="5">
+                                <!-- Weld Leg Size hf -->
+
+                            </div>
+                        </div>
+
+                        <!-- RIGHT PANEL: Results -->
+                        <div style="flex:1; min-width:350px;">
+                            <div style="margin-bottom:15px; font-size:0.9rem; color:#475569; font-weight:600;">
+                                说明 (Note): <span id="anchor-note-display"></span>
+                            </div>
+
+                            <!-- Diagonal Results -->
+                            <div id="res-group-diag">
+                                <div class="res-grid-col">
+                                    <!-- Single Bolt Tension -->
+                                    <div class="res-card-full"
+                                        onclick="showCalcDetail('calc-box-anchor-t-bolt', 'anchor_t_bolt', '单栓拉力')">
+                                        <div class="card-header-row">
+                                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                            <div class="header-label">单栓拉力 (Single Bolt Tension)</div>
+                                            <div class="header-value" id="res-anchor-t-bolt">--</div>
+                                            <div class="header-unit">kN</div>
+                                            <div class="chevron">▼</div>
+                                        </div>
+                                    </div>
+                                    <div id="calc-box-anchor-t-bolt" class="calc-process-box"
+                                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                                    </div>
+
+                                    <!-- Slant Member Stress -->
+                                    <div class="res-card-full"
+                                        onclick="showCalcDetail('calc-box-anchor-sigma', 'anchor_sigma_slant', '斜撑应力')">
+                                        <div class="card-header-row">
+                                            <div class="res-icon check">✓</div>
+                                            <div class="header-label">斜撑应力 (Slant Member Stress)</div>
+                                            <div class="header-value" id="res-anchor-sigma-slant">--</div>
+                                            <div class="header-unit">MPa</div>
+                                            <div class="chevron">▼</div>
+                                        </div>
+                                    </div>
+                                    <div id="calc-box-anchor-sigma" class="calc-process-box"
+                                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                                    </div>
+
+                                    <!-- Pull-out Value -->
+                                    <div class="res-card-full"
+                                        onclick="showCalcDetail('calc-box-anchor-pull', 'anchor_pull_val', '螺栓拉拔值')">
+                                        <div class="card-header-row">
+                                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                            <div class="header-label">螺栓拉拔值 (Pull-out Design Value)</div>
+                                            <div class="header-value" id="res-anchor-pull-val">--</div>
+                                            <div class="header-unit">kN</div>
+                                            <div class="chevron">▼</div>
+                                        </div>
+                                    </div>
+                                    <div id="calc-box-anchor-pull" class="calc-process-box"
+                                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- No Diagonal Results -->
+                            <div id="res-group-nod" style="display:none;">
+                                <div class="res-grid-col">
+                                    <!-- Top Bolt -->
+                                    <div class="res-card-full"
+                                        onclick="showCalcDetail('calc-box-anchor-f1', 'anchor_f1', '上侧螺栓拉力 F1')">
+                                        <div class="card-header-row">
+                                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                            <div class="header-label">上侧螺栓拉力 F1 (Top Bolt Force)</div>
+                                            <div class="header-value" id="res-anchor-f1">--</div>
+                                            <div class="header-unit">kN</div>
+                                            <div class="chevron">▼</div>
+                                        </div>
+                                    </div>
+                                    <div id="calc-box-anchor-f1" class="calc-process-box"
+                                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                                    </div>
+
+                                    <!-- Bottom Bolt -->
+                                    <div class="res-card-full"
+                                        onclick="showCalcDetail('calc-box-anchor-f2', 'anchor_f2', '下侧螺栓拉力 F2')">
+                                        <div class="card-header-row">
+                                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                            <div class="header-label">下侧螺栓拉力 F2 (Bottom Bolt Force)</div>
+                                            <div class="header-value" id="res-anchor-f2">--</div>
+                                            <div class="header-unit">kN</div>
+                                            <div class="chevron">▼</div>
+                                        </div>
+                                    </div>
+                                    <div id="calc-box-anchor-f2" class="calc-process-box"
+                                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                                    </div>
+
+                                    <!-- Pull-out Design -->
+                                    <div class="res-card-full"
+                                        onclick="showCalcDetail('calc-box-anchor-pull-design', 'anchor_pull_design', '拉拔设计值')">
+                                        <div class="card-header-row">
+                                            <div class="res-icon" style="background:#eff6ff; color:#3b82f6;">i</div>
+                                            <div class="header-label">拉拔设计值 (Pull-out Design Value)</div>
+                                            <div class="header-value" id="res-anchor-pull">--</div>
+                                            <div class="header-unit">kN</div>
+                                            <div class="chevron">▼</div>
+                                        </div>
+                                    </div>
+                                    <div id="calc-box-anchor-pull-design" class="calc-process-box"
+                                        style="display:none; margin-top:5px; margin-bottom:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:15px; font-size:0.9rem;">
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height:100px;"></div>
+            </div>
+        </div>
+
+        <!-- Toolbox View (Preserved) -->
+    </div>
+
+    </div>
+
+    <div id="app-toolbox-view" class="hidden"
+        style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:#f3f4f6; z-index:9999; display:none;">
+        <div class="main-container"
+            style="max-width:1400px; margin:20px auto; height:calc(100% - 40px); box-shadow:0 10px 25px rgba(0,0,0,0.1); background:white; display:flex; flex-direction:column; border-radius:12px; overflow:hidden;">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; align-items:center; padding:20px 25px; background:white; border-bottom:1px solid #e5e7eb;">
+                <div class="modal-title" style="display:flex; align-items:center; gap:10px;">
+                    <button class="btn-black" onclick="closeToolbox()"
+                        style="display:flex; align-items:center; gap:5px; padding:5px 15px; border-radius:6px; background:#1f2937; color:white; border:none; cursor:pointer;"><span>←</span>
+                        Back</button>
+                    <span style="font-size:1.5rem">🧰</span>
+                    <span id="toolbox-title-text" style="font-size:1.2rem; font-weight:700;">Web-MSteel
+                        结构工具箱</span>
+                </div>
+                <div class="modal-actions">
+                    <div class="tab-toggle"
+                        style="display:flex; gap:5px; background:#f3f4f6; padding:4px; border-radius:6px;">
+                        <button id="tab-btn-sec" class="tab-link active" onclick="switchToolboxTab('section')"
+                            style="border:none; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer;">■
+                            截面查询</button>
+                        <button id="tab-btn-beam" class="tab-link" onclick="switchToolboxTab('beam')"
+                            style="border:none; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <span style="color:#a855f7;">⚡</span> 连续梁计算
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body" style="flex:1; overflow:hidden; background:#f8fafc; padding:0;">
+                <!-- TAB 1: Section Properties -->
+                <div id="tb-tab-section" class="tb-tab-content" style="height:100%;">
+                    <div class="tb-layout-grid"
+                        style="display:grid; grid-template-columns: 320px 1fr; gap:20px; padding:20px; height:calc(100% - 20px); overflow-y:auto;">
+
+                        <!-- Sidebar Card -->
+                        <div class="tb-card tb-sidebar-card" style="height:fit-content;">
+                            <div class="tb-panel-title"
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <span
+                                    style="font-weight:700; color:#374151; display:flex; align-items:center; gap:5px;">📏
+                                    截面参数</span>
+                                <div class="sec-type-toggle"
+                                    style="display:flex; gap:2px; background:#f3f4f6; padding:2px; border-radius:4px;">
+                                    <button id="btn-sec-type-h" class="active"
+                                        onclick="ToolboxManager.updateSectionType('h')">H型</button>
+                                    <button id="btn-sec-type-box"
+                                        onclick="ToolboxManager.updateSectionType('box')">箱型</button>
+                                    <button id="btn-sec-type-angle"
+                                        onclick="ToolboxManager.updateSectionType('angle')">角钢</button>
+                                    <button id="btn-sec-type-channel"
+                                        onclick="ToolboxManager.updateSectionType('channel')">普槽</button>
+                                </div>
+                            </div>
+
+                            <!-- Channel Preset Selector (Hidden by default) -->
+                            <div id="tb-channel-preset-row" class="tb-input-row"
+                                style="display:none; margin-bottom:15px; background:#e0f2fe; padding:8px; border-radius:6px;">
+                                <label style="color:#0284c7; font-weight:700;">预设 Preset</label>
+                                <select id="tb-sec-channel-preset"
+                                    onchange="ToolboxManager.updateChannelPreset(this.value)"
+                                    style="flex:1; padding:4px; border:1px solid #7dd3fc; border-radius:4px;">
+                                    <option value="custom">Custom (自定义)</option>
+                                    <option value="C8">普槽8 (Common 8#)</option>
+                                    <option value="C10">普槽10 (Common 10#)</option>
+                                </select>
+                            </div>
+
+                            <div class="tb-input-row">
+                                <label>高度 H</label>
+                                <input type="number" id="tb-sec-h" class="js-sec-h" value="400">
+                            </div>
+                            <div class="tb-input-row">
+                                <label>宽度 B</label>
+                                <input type="number" id="tb-sec-b" class="js-sec-b" value="200">
+                            </div>
+                            <div class="tb-input-row">
+                                <label>腹板 tw</label>
+                                <input type="number" id="tb-sec-tw" class="js-sec-tw" value="8">
+                            </div>
+                            <div class="tb-input-row" id="tb-input-group-4">
+                                <label>翼缘 tf</label>
+                                <input type="number" id="tb-sec-tf" class="js-sec-tf" value="13">
+                            </div>
+                            <div class="tb-input-row" id="tb-input-group-r" style="display:none;">
+                                <label>内圆角 r</label>
+                                <input type="number" id="tb-sec-r" class="js-sec-r" value="8">
+                            </div>
+
+                        </div> <!-- End Sidebar Card (Col 1) -->
+
+                        <div class="tb-main-display"
+                            style="display:flex; flex-direction:column; gap:20px; overflow-y:auto;">
+                            <!-- Canvas Card (Top) -->
+                            <div class="tb-card tb-canvas-card"
+                                style="flex:1; display:flex; align-items:center; justify-content:center; min-height:450px; background:white; position:relative;">
+                                <div
+                                    style="position:absolute; top:15px; left:15px; font-weight:700; color:#cbd5e1; font-size:1.5rem;">
+                                    VIEW</div>
+                                <canvas id="tb-sec-canvas" style="width:100%; height:100%;"></canvas>
+                            </div>
+
+                            <!-- Results Card (Bottom) -->
+                            <div class="tb-card tb-results-card" style="padding:25px;">
+                                <div class="tb-res-header-bar"
+                                    style="border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                                    <div>
+                                        <span style="font-weight:700; color:#1e293b; font-size:1.1rem;">截面参数计算结果
+                                            (Calculated Properties)</span>
+                                        <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">Based on
+                                            GB
+                                            Standard</div>
+                                    </div>
+                                    <span class="tb-badge-std"
+                                        style="background:#e0f2fe; color:#0284c7; padding:5px 10px; border-radius:20px;">PRO
+                                        MODE</span>
+                                </div>
+                                <div class="tb-results-grid tb-res-grid" id="tb-sec-results"
+                                    style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:20px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB 2: Beam (MSteel V3.9 RESTORED) -->
+            <div id="tb-tab-beam" class="tb-tab-content hidden" style="height:100%; background:#f1f5f9;">
+                <div class="tb-layout-split" style="display:flex; height:100%;">
+                    <!-- LEFT SIDEBAR -->
+                    <div class="tb-sidebar"
+                        style="width:340px; padding:20px; padding-bottom:80px; background:white; border-right:1px solid #e2e8f0; overflow-y:auto; display:flex; flex-direction:column; gap:20px;">
+
+                        <!-- Card 1: Section Parameters (Blue) -->
+                        <div class="tb-card"
+                            style="border-left:4px solid #3b82f6; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                            <div class="tb-strip-title"
+                                style="color:#1e293b; font-weight:700; display:flex; gap:8px; align-items:center; margin-bottom:15px;">
+                                <span style="color:#3b82f6;">📎</span> 截面参数
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;">
+                                <label>高度 H</label>
+                                <input type="number" class="js-sec-h" id="tb-beam-sec-h" value="400">
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;">
+                                <label>宽度 B</label>
+                                <input type="number" class="js-sec-b" id="tb-beam-sec-b" value="200">
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;">
+                                <label>腹板 tw</label>
+                                <input type="number" class="js-sec-tw" id="tb-beam-sec-tw" value="8">
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;" id="tb-beam-grp-tf">
+                                <label>翼缘 tf</label>
+                                <input type="number" class="js-sec-tf" id="tb-beam-sec-tf" value="13">
+                            </div>
+                            <div class="tb-input-row" id="tb-beam-grp-r" style="display:none; margin-bottom:8px;">
+                                <label>内圆角 r</label>
+                                <input type="number" class="js-sec-r" id="tb-beam-sec-r" value="0">
+                            </div>
+                            <div
+                                style="margin-top:10px; border-top:1px dashed #e2e8f0; padding-top:10px; font-size:0.8rem; color:#64748b; display:flex; justify-content:space-between;">
+                                <span>Ix: <strong style="color:#334155;" id="tb-beam-res-ix">--</strong>
+                                    mm⁴</span>
+                                <span>Weight: <strong style="color:#334155;" id="tb-beam-res-w">--</strong>
+                                    kg/m</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Beam Parameters (Purple) -->
+                        <div class="tb-card"
+                            style="border-left:4px solid #a855f7; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                            <div class="tb-strip-title"
+                                style="color:#1e293b; font-weight:700; display:flex; gap:8px; align-items:center; margin-bottom:15px;">
+                                <span style="color:#a855f7;">⬇</span> 连续梁参数
+                            </div>
+
+                            <!-- Spans -->
+                            <div style="margin-bottom:15px;">
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <label style="font-size:0.85rem; font-weight:700; color:#475569;">跨段列表
+                                        (SPANS)</label>
+                                    <button class="btn-sm" onclick="tbAddSpan()"
+                                        style="color:#a855f7; background:#f3e8ff; border:none; padding:3px 8px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.8rem;">+
+                                        增加跨度</button>
+                                </div>
+                                <div id="tb-span-list" style="display:flex; flex-direction:column; gap:6px;">
+                                </div>
+                            </div>
+
+                            <!-- Modulus -->
+                            <div class="tb-input-row" style="margin-bottom:15px;">
+                                <label>弹性模量 E</label>
+                                <div style="display:flex; align-items:center; gap:5px;">
+                                    <input type="number" id="tb-beam-e" value="206000"
+                                        style="width:80px; text-align:right;">
+                                    <span style="font-size:0.8rem; color:#64748b;">MPa</span>
+                                </div>
+                            </div>
+
+                            <!-- Self Weight -->
+                            <div
+                                style="margin-bottom:15px; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; font-weight:600; color:#475569;">
+                                    <input type="checkbox" id="tb-check-self-weight"
+                                        onchange="ToolboxManager.toggleSelfWeight()">
+                                    计算自重
+                                </label>
+                                <div style="margin-top:5px; font-size:0.8rem; color:#64748b; display:none;"
+                                    id="tb-sw-detail">
+                                    放大系数: <input type="number" id="tb-sw-factor" value="1.2" step="0.1"
+                                        style="width:50px; border:1px solid #ccc; border-radius:3px; padding:2px;"
+                                        oninput="ToolboxManager.calculateBeam()">
+                                </div>
+                            </div>
+
+                            <!-- Loads -->
+                            <div>
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <label style="font-size:0.85rem; font-weight:700; color:#475569;">附加荷载</label>
+                                    <button class="btn-sm" onclick="tbAddLoad()"
+                                        style="color:#a855f7; background:#f3e8ff; border:none; padding:3px 8px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.8rem;">+
+                                        添加荷载</button>
+                                </div>
+                                <div id="tb-load-list" style="display:flex; flex-direction:column; gap:8px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT MAIN VIEW -->
+                    <div class="tb-main-view scrollable"
+                        style="flex:1; padding:20px; overflow-y:auto; background:#f1f5f9;">
+                        <!-- Summary Cards Grid -->
+                        <div class="tb-summary-grid"
+                            style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-bottom:20px;">
+                            <!-- M_max -->
+                            <div class="tb-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #ef4444;">
+                                <div style="font-size:0.8rem; color:#64748b; font-weight:600;">设计弯矩 M_max</div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#ef4444; margin-top:5px;">
+                                    <span id="sum-m-val">--</span> <span style="font-size:0.9rem;">kN·m</span>
+                                </div>
+                            </div>
+                            <!-- V_max -->
+                            <div class="tb-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #10b981;">
+                                <div style="font-size:0.8rem; color:#64748b; font-weight:600;">设计剪力 V_max</div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#10b981; margin-top:5px;">
+                                    <span id="sum-v-val">--</span> <span style="font-size:0.9rem;">kN</span>
+                                </div>
+                            </div>
+                            <!-- R_max -->
+                            <div class="tb-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #3b82f6;">
+                                <div style="font-size:0.8rem; color:#64748b; font-weight:600;">最大反力 R_max</div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#3b82f6; margin-top:5px;">
+                                    <span id="sum-r-val">--</span> <span style="font-size:0.9rem;">kN</span>
+                                </div>
+                            </div>
+                            <!-- Deflection -->
+                            <div class="tb-card" onclick="ToolboxManager.showDeflectionProcess()"
+                                title="Click for Calculation Details"
+                                style="cursor:pointer; background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #f97316; position:relative;">
+                                <div style="position:absolute; top:10px; right:10px; color:#94a3b8; cursor:help;">
+                                    ⓘ</div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                    <div style="font-size:0.8rem; color:#64748b; font-weight:600;">实际挠度 f (SLS)
+                                    </div>
+                                    <div style="font-size:0.7rem; color:#94a3b8; text-align:right;">限值 <span
+                                            id="sum-def-limit">L/250</span></div>
+                                </div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#f97316;">
+                                    <span id="sum-def-val">--</span> <span style="font-size:0.9rem;">mm</span>
+                                </div>
+                                <div id="sum-def-status"
+                                    style="margin-top:5px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; background:#ffedd5; color:#ea580c;">
+                                    --</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Stack -->
+                        <div style="display:flex; flex-direction:column; gap:15px;">
+                            <!-- Loads Schematic (Moved Top) -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#7e22ce;">
+                                    <span>荷载示意图 Load Schematic</span>
+                                </div>
+                                <canvas id="chart-loads" height="80"></canvas>
+                            </div>
+                            <!-- Reaction -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#3b82f6;">
+                                    <span>支座反力图 Reaction (R)</span>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart-max-val-r">--</span> kN</span>
+                                </div>
+                                <canvas id="chart-reaction" height="100"></canvas>
+                            </div>
+                            <!-- Moment -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#ef4444;">
+                                    <span>弯矩图 Moment (ULS)</span>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart-max-val-m">--</span> kN·m</span>
+                                </div>
+                                <canvas id="chart-moment" height="100"></canvas>
+                            </div>
+                            <!-- Shear -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#10b981;">
+                                    <span>剪力图 Shear (ULS)</span>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart-max-val-v">--</span> kN</span>
+                                </div>
+                                <canvas id="chart-shear" height="100"></canvas>
+                            </div>
+                            <!-- Deflection -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#f97316;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span>挠度图 Deflection (SLS)</span>
+                                        <a href="javascript:void(0)" onclick="ToolboxManager.showDeflectionProcess()"
+                                            style="font-size:0.75rem; background:#fff7ed; color:#ea580c; padding:2px 8px; border-radius:12px; text-decoration:none; border:1px solid #fed7aa;"
+                                            title="查看计算过程 View Calculation Process">? Process</a>
+                                    </div>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart-max-val-def">--</span> mm</span>
+                                </div>
+                                <canvas id="chart-deflection" height="100"></canvas>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fixed Extra Divs Removed -->
+
+            <div id="formula-popover" class="popover hidden"
+                style="position:absolute; background:white; border:1px solid #ccc; padding:10px; border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10000; width:300px;">
+                <div id="pop-formula"
+                    style="font-family:monospace; background:#f3f4f6; padding:5px; margin-bottom:5px;">
+                </div>
+                <div id="pop-step" style="font-size:0.9rem; margin-bottom:5px;"></div>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#666;">
+                    <span id="pop-limit"></span>
+                    <span id="pop-result" style="font-weight:bold; color:#2563eb;"></span>
+                </div>
+            </div>
+
+
+        </div> <!-- End Modal Body -->
+    </div> <!-- End Main Container -->
+    </div> <!-- End App Toolbox View -->
+
+    <!-- TOOLBOX 2 VIEW (INDEPENDENT INSTANCE) -->
+    <div id="app-toolbox-view-2" class="hidden"
+        style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:#f3f4f6; z-index:9999; display:none;">
+        <div class="main-container"
+            style="max-width:1400px; margin:20px auto; height:calc(100% - 40px); box-shadow:0 10px 25px rgba(0,0,0,0.1); background:white; display:flex; flex-direction:column; border-radius:12px; overflow:hidden;">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; align-items:center; padding:20px 25px; background:white; border-bottom:1px solid #e5e7eb;">
+                <div class="modal-title" style="display:flex; align-items:center; gap:10px;">
+                    <button class="btn-black" onclick="closeToolbox2()"
+                        style="display:flex; align-items:center; gap:5px; padding:5px 15px; border-radius:6px; background:#1f2937; color:white; border:none; cursor:pointer;"><span>←</span>
+                        Back</button>
+                    <span style="font-size:1.5rem">🧰</span>
+                    <span id="toolbox2-title-text" style="font-size:1.2rem; font-weight:700;">Web-MSteel
+                        结构工具箱 2 (Toolbox 2)</span>
+                </div>
+                <div class="modal-actions">
+                    <div class="tab-toggle"
+                        style="display:flex; gap:5px; background:#f3f4f6; padding:4px; border-radius:6px;">
+                        <button id="tab-btn-sec-2" class="tab-link-2 active" onclick="switchToolboxTab2('section')"
+                            style="border:none; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer;">■
+                            截面查询</button>
+                        <button id="tab-btn-beam-2" class="tab-link-2" onclick="switchToolboxTab2('beam')"
+                            style="border:none; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <span style="color:#a855f7;">⚡</span> 连续梁计算
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body" style="flex:1; overflow:hidden; background:#f8fafc; padding:0;">
+                <!-- TAB 1: Section Properties -->
+                <div id="tb2-tab-section" class="tb2-tab-content" style="height:100%;">
+                    <div class="tb-layout-grid"
+                        style="display:grid; grid-template-columns: 320px 1fr; gap:20px; padding:20px; height:calc(100% - 20px); overflow-y:auto;">
+
+                        <!-- Sidebar Card -->
+                        <div class="tb-card tb-sidebar-card" style="height:fit-content;">
+                            <div class="tb-panel-title"
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <span
+                                    style="font-weight:700; color:#374151; display:flex; align-items:center; gap:5px;">📏
+                                    截面参数</span>
+                                <div class="js-sec2-type-toggle"
+                                    style="display:flex; gap:2px; background:#f3f4f6; padding:2px; border-radius:4px;">
+                                    <button id="btn-tb2-sec-type-h" class="active"
+                                        style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                        onclick="ToolboxManager2.updateSectionType('h')">H型</button>
+                                    <button id="btn-tb2-sec-type-box"
+                                        style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                        onclick="ToolboxManager2.updateSectionType('box')">箱型</button>
+                                    <button id="btn-tb2-sec-type-angle"
+                                        style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                        onclick="ToolboxManager2.updateSectionType('angle')">角钢</button>
+                                    <button id="btn-tb2-sec-type-channel"
+                                        style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                        onclick="ToolboxManager2.updateSectionType('channel')">普槽</button>
+                                </div>
+                            </div>
+
+                            <!-- Channel Preset Selector (Hidden by default) -->
+                            <div id="tb2-channel-preset-row" class="tb-input-row"
+                                style="display:none; margin-bottom:15px; background:#e0f2fe; padding:8px; border-radius:6px;">
+                                <label style="color:#0284c7; font-weight:700;">预设 Preset</label>
+                                <select id="tb2-sec-channel-preset"
+                                    onchange="ToolboxManager2.updateChannelPreset(this.value)"
+                                    style="flex:1; padding:4px; border:1px solid #7dd3fc; border-radius:4px;">
+                                    <option value="custom">Custom (自定义)</option>
+                                    <option value="C8">普槽8 (Common 8#)</option>
+                                    <option value="C10">普槽10 (Common 10#)</option>
+                                </select>
+                            </div>
+
+                            <div class="tb-input-row">
+                                <label>高度 H</label>
+                                <input type="number" id="tb2-sec-h" class="js-sec2-h" value="400">
+                            </div>
+                            <div class="tb-input-row">
+                                <label>宽度 B</label>
+                                <input type="number" id="tb2-sec-b" class="js-sec2-b" value="200">
+                            </div>
+                            <div class="tb-input-row">
+                                <label>腹板 tw</label>
+                                <input type="number" id="tb2-sec-tw" class="js-sec2-tw" value="8">
+                            </div>
+                            <div class="tb-input-row" id="tb2-input-group-4">
+                                <label>翼缘 tf</label>
+                                <input type="number" id="tb2-sec-tf" class="js-sec2-tf" value="13">
+                            </div>
+                            <div class="tb-input-row" id="tb2-input-group-r" style="display:none;">
+                                <label>内圆角 r</label>
+                                <input type="number" id="tb2-sec-r" class="js-sec2-r" value="8">
+                            </div>
+
+                        </div> <!-- End Sidebar Card (Col 1) -->
+
+                        <div class="tb-main-display"
+                            style="display:flex; flex-direction:column; gap:20px; overflow-y:auto;">
+                            <!-- Canvas Card (Top) -->
+                            <div class="tb-card tb-canvas-card"
+                                style="flex:1; display:flex; align-items:center; justify-content:center; min-height:450px; background:white; position:relative;">
+                                <div
+                                    style="position:absolute; top:15px; left:15px; font-weight:700; color:#cbd5e1; font-size:1.5rem;">
+                                    VIEW</div>
+                                <canvas id="tb2-sec-canvas" style="width:100%; height:100%;"></canvas>
+                            </div>
+
+                            <!-- Results Card (Bottom) -->
+                            <div class="tb-card tb-results-card" style="padding:25px;">
+                                <div class="tb-res-header-bar"
+                                    style="border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                                    <div>
+                                        <span style="font-weight:700; color:#1e293b; font-size:1.1rem;">截面参数计算结果
+                                            (Calculated Properties)</span>
+                                        <div style="font-size:0.8rem; color:#64748b; margin-top:4px;">Based on GB
+                                            Standard</div>
+                                    </div>
+                                    <span class="tb-badge-std"
+                                        style="background:#e0f2fe; color:#0284c7; padding:5px 10px; border-radius:20px;">PRO
+                                        MODE</span>
+                                </div>
+                                <div class="tb-results-grid tb-res-grid" id="tb2-sec-results"
+                                    style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:20px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB 2: Beam -->
+            <div id="tb2-tab-beam" class="tb2-tab-content hidden" style="height:100%; background:#f1f5f9;">
+                <div class="tb-layout-split" style="display:flex; height:100%;">
+                    <!-- LEFT SIDEBAR -->
+                    <div class="tb-sidebar"
+                        style="width:340px; padding:20px; padding-bottom:80px; background:white; border-right:1px solid #e2e8f0; overflow-y:auto; display:flex; flex-direction:column; gap:20px;">
+
+                        <!-- Card 1: Section Parameters (Blue) -->
+                        <div class="tb-card"
+                            style="border-left:4px solid #3b82f6; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                            <div class="tb-strip-title"
+                                style="color:#1e293b; font-weight:700; display:flex; gap:8px; align-items:center; margin-bottom:15px;">
+                                <span style="color:#3b82f6;">📎</span> 截面参数
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;">
+                                <label>高度 H</label>
+                                <input type="number" class="js-sec2-h" id="tb2-beam-sec-h" value="400">
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;">
+                                <label>宽度 B</label>
+                                <input type="number" class="js-sec2-b" id="tb2-beam-sec-b" value="200">
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;">
+                                <label>腹板 tw</label>
+                                <input type="number" class="js-sec2-tw" id="tb2-beam-sec-tw" value="8">
+                            </div>
+                            <div class="tb-input-row" style="margin-bottom:8px;" id="tb2-beam-grp-tf">
+                                <label>翼缘 tf</label>
+                                <input type="number" class="js-sec2-tf" id="tb2-beam-sec-tf" value="13">
+                            </div>
+                            <div class="tb-input-row" id="tb2-beam-grp-r" style="display:none; margin-bottom:8px;">
+                                <label>内圆角 r</label>
+                                <input type="number" class="js-sec2-r" id="tb2-beam-sec-r" value="0">
+                            </div>
+                            <div
+                                style="margin-top:10px; border-top:1px dashed #e2e8f0; padding-top:10px; font-size:0.8rem; color:#64748b; display:flex; justify-content:space-between;">
+                                <span>Ix: <strong style="color:#334155;" id="tb2-beam-res-ix">--</strong>
+                                    mm⁴</span>
+                                <span>Weight: <strong style="color:#334155;" id="tb2-beam-res-w">--</strong>
+                                    kg/m</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Beam Parameters (Purple) -->
+                        <div class="tb-card"
+                            style="border-left:4px solid #a855f7; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                            <div class="tb-strip-title"
+                                style="color:#1e293b; font-weight:700; display:flex; gap:8px; align-items:center; margin-bottom:15px;">
+                                <span style="color:#a855f7;">⬇</span> 连续梁参数
+                            </div>
+
+                            <!-- Spans -->
+                            <div style="margin-bottom:15px;">
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <label style="font-size:0.85rem; font-weight:700; color:#475569;">跨段列表
+                                        (SPANS)</label>
+                                    <button class="btn-sm" onclick="tb2AddSpan()"
+                                        style="color:#a855f7; background:#f3e8ff; border:none; padding:3px 8px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.8rem;">+
+                                        增加跨度</button>
+                                </div>
+                                <div id="tb2-span-list" style="display:flex; flex-direction:column; gap:6px;">
+                                </div>
+                            </div>
+
+                            <!-- Modulus -->
+                            <div class="tb-input-row" style="margin-bottom:15px;">
+                                <label>弹性模量 E</label>
+                                <div style="display:flex; align-items:center; gap:5px;">
+                                    <input type="number" id="tb2-beam-e" value="206000"
+                                        style="width:80px; text-align:right;">
+                                    <span style="font-size:0.8rem; color:#64748b;">MPa</span>
+                                </div>
+                            </div>
+
+                            <!-- Self Weight -->
+                            <div
+                                style="margin-bottom:15px; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                                <label
+                                    style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; font-weight:600; color:#475569;">
+                                    <input type="checkbox" id="tb2-check-self-weight"
+                                        onchange="ToolboxManager2.toggleSelfWeight()">
+                                    计算自重
+                                </label>
+                                <div style="margin-top:5px; font-size:0.8rem; color:#64748b; display:none;"
+                                    id="tb2-sw-detail">
+                                    放大系数: <input type="number" id="tb2-sw-factor" value="1.2" step="0.1"
+                                        style="width:50px; border:1px solid #ccc; border-radius:3px; padding:2px;"
+                                        oninput="ToolboxManager2.calculateBeam()">
+                                </div>
+                            </div>
+
+                            <!-- Loads -->
+                            <div>
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                    <label style="font-size:0.85rem; font-weight:700; color:#475569;">附加荷载</label>
+                                    <button class="btn-sm" onclick="tb2AddLoad()"
+                                        style="color:#a855f7; background:#f3e8ff; border:none; padding:3px 8px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.8rem;">+
+                                        添加荷载</button>
+                                </div>
+                                <div id="tb2-load-list" style="display:flex; flex-direction:column; gap:8px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT MAIN VIEW -->
+                    <div class="tb-main-view scrollable"
+                        style="flex:1; padding:20px; overflow-y:auto; background:#f1f5f9;">
+                        <!-- Summary Cards Grid -->
+                        <div class="tb-summary-grid"
+                            style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-bottom:20px;">
+                            <!-- M_max -->
+                            <div class="tb-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #ef4444;">
+                                <div style="font-size:0.8rem; color:#64748b; font-weight:600;">设计弯矩 M_max</div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#ef4444; margin-top:5px;">
+                                    <span id="sum2-m-val">--</span> <span style="font-size:0.9rem;">kN·m</span>
+                                </div>
+                            </div>
+                            <!-- V_max -->
+                            <div class="tb-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #10b981;">
+                                <div style="font-size:0.8rem; color:#64748b; font-weight:600;">设计剪力 V_max</div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#10b981; margin-top:5px;">
+                                    <span id="sum2-v-val">--</span> <span style="font-size:0.9rem;">kN</span>
+                                </div>
+                            </div>
+                            <!-- R_max -->
+                            <div class="tb-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #3b82f6;">
+                                <div style="font-size:0.8rem; color:#64748b; font-weight:600;">最大反力 R_max</div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#3b82f6; margin-top:5px;">
+                                    <span id="sum2-r-val">--</span> <span style="font-size:0.9rem;">kN</span>
+                                </div>
+                            </div>
+                            <!-- Deflection -->
+                            <div class="tb-card" onclick="ToolboxManager2.showDeflectionProcess()"
+                                title="Click for Calculation Details"
+                                style="cursor:pointer; background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #f97316; position:relative;">
+                                <div style="position:absolute; top:10px; right:10px; color:#94a3b8; cursor:help;">
+                                    ⓘ</div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                    <div style="font-size:0.8rem; color:#64748b; font-weight:600;">实际挠度 f (SLS)
+                                    </div>
+                                    <div style="font-size:0.7rem; color:#94a3b8; text-align:right;">限值 <span
+                                            id="sum2-def-limit">L/250</span></div>
+                                </div>
+                                <div style="font-size:1.5rem; font-weight:800; color:#f97316;">
+                                    <span id="sum2-def-val">--</span> <span style="font-size:0.9rem;">mm</span>
+                                </div>
+                                <div id="sum2-def-status"
+                                    style="margin-top:5px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; background:#ffedd5; color:#ea580c;">
+                                    --</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Stack -->
+                        <div style="display:flex; flex-direction:column; gap:15px;">
+                            <!-- Loads Schematic (Moved Top) -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#7e22ce;">
+                                    <span>荷载示意图 Load Schematic</span>
+                                </div>
+                                <canvas id="chart2-loads" height="80"></canvas>
+                            </div>
+                            <!-- Reaction -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#3b82f6;">
+                                    <span>支座反力图 Reaction (R)</span>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart2-max-val-r">--</span> kN</span>
+                                </div>
+                                <canvas id="chart2-reaction" height="100"></canvas>
+                            </div>
+                            <!-- Moment -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#ef4444;">
+                                    <span>弯矩图 Moment (ULS)</span>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart2-max-val-m">--</span> kN·m</span>
+                                </div>
+                                <canvas id="chart2-moment" height="100"></canvas>
+                            </div>
+                            <!-- Shear -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#10b981;">
+                                    <span>剪力图 Shear (ULS)</span>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart2-max-val-v">--</span> kN</span>
+                                </div>
+                                <canvas id="chart2-shear" height="100"></canvas>
+                            </div>
+                            <!-- Deflection -->
+                            <div class="chart-card"
+                                style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                <div
+                                    style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#f97316;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span>挠度图 Deflection (SLS)</span>
+                                        <a href="javascript:void(0)" onclick="ToolboxManager2.showDeflectionProcess()"
+                                            style="font-size:0.75rem; background:#fff7ed; color:#ea580c; padding:2px 8px; border-radius:12px; text-decoration:none; border:1px solid #fed7aa;"
+                                            title="查看计算过程 View Calculation Process">? Process</a>
+                                    </div>
+                                    <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                            id="chart2-max-val-def">--</span> mm</span>
+                                </div>
+                                <canvas id="chart2-deflection" height="100"></canvas>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fixed Extra Divs Removed -->
+            <!-- Popovers etc are optional here if shared, but usually fine to omit or duplicate if needed. 
+                 The popover logic in index.html seems global or attached to events not present here. -->
+        </div> <!-- End Modal Body -->
+    </div> <!-- End App Toolbox View 2 -->
+
+    <!-- TOOLBOX 3 VIEW (INDEPENDENT INSTANCE) -->
+    <div id="app-toolbox-view-3" class="hidden"
+        style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:#f3f4f6; z-index:9999; display:none;">
+        <div class="main-container"
+            style="max-width:1400px; margin:20px auto; height:calc(100% - 40px); box-shadow:0 10px 25px rgba(0,0,0,0.1); background:white; display:flex; flex-direction:column; border-radius:12px; overflow:hidden;">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; align-items:center; padding:20px 25px; background:white; border-bottom:1px solid #e5e7eb;">
+                <div class="modal-title" style="display:flex; align-items:center; gap:10px;">
+                    <button class="btn-black" onclick="closeToolbox3()"
+                        style="display:flex; align-items:center; gap:5px; padding:5px 15px; border-radius:6px; background:#1f2937; color:white; border:none; cursor:pointer;"><span>←</span>
+                        Back</button>
+                    <span style="font-size:1.5rem">🧰</span>
+                    <span id="toolbox3-title-text" style="font-size:1.2rem; font-weight:700;">Web-MSteel
+                        结构工具箱 3 (Toolbox 3)</span>
+                </div>
+                <div class="modal-actions">
+                    <div class="tab-toggle"
+                        style="display:flex; gap:5px; background:#f3f4f6; padding:4px; border-radius:6px;">
+                        <button id="tab-btn-sec-3" class="tab-link-3 active" onclick="switchToolboxTab3('section')"
+                            style="border:none; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer;">■
+                            截面查询</button>
+                        <button id="tab-btn-beam-3" class="tab-link-3" onclick="switchToolboxTab3('beam')"
+                            style="border:none; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                            <span style="color:#a855f7;">⚡</span> 连续梁计算
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body" style="flex:1; overflow:hidden; background:#f8fafc; padding:0;">
+                <!-- TAB 1: Section Properties -->
+                <div id="tb3-tab-section" class="tb3-tab-content" style="height:100%;">
+                    <div class="tb-layout-split" style="display:flex; height:100%;">
+                        <!-- LEFT SIDEBAR -->
+                        <div class="tb-sidebar"
+                            style="width:340px; padding:20px; padding-bottom:80px; background:white; border-right:1px solid #e2e8f0; overflow-y:auto; display:flex; flex-direction:column; gap:20px;">
+
+                            <!-- Card 1: Section Parameters (Blue) -->
+                            <div class="tb-card tb-sidebar-card" style="height:fit-content;">
+                                <div class="tb-panel-title"
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                    <span
+                                        style="font-weight:700; color:#374151; display:flex; align-items:center; gap:5px;">📏
+                                        截面参数</span>
+                                    <div class="js-sec3-type-toggle"
+                                        style="display:flex; gap:2px; background:#f3f4f6; padding:2px; border-radius:4px;">
+                                        <button id="btn-tb3-sec-type-h" class="active"
+                                            style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                            onclick="ToolboxManager3.updateSectionType('h')">H型</button>
+                                        <button id="btn-tb3-sec-type-box"
+                                            style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                            onclick="ToolboxManager3.updateSectionType('box')">箱型</button>
+                                        <button id="btn-tb3-sec-type-angle"
+                                            style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                            onclick="ToolboxManager3.updateSectionType('angle')">角钢</button>
+                                        <button id="btn-tb3-sec-type-channel"
+                                            style="border:none; padding:2px 8px; font-size:0.7rem; cursor:pointer; border-radius:3px; background:transparent; color:#6b7280; transition:all 0.2s;"
+                                            onclick="ToolboxManager3.updateSectionType('channel')">普槽</button>
+                                    </div>
+                                </div>
+
+                                <!-- Channel Preset Selector (Hidden by default) -->
+                                <div id="tb3-channel-preset-row" class="tb-input-row"
+                                    style="display:none; margin-bottom:15px; background:#e0f2fe; padding:8px; border-radius:6px;">
+                                    <label style="color:#0284c7; font-weight:700;">预设 Preset</label>
+                                    <select id="tb3-sec-channel-preset"
+                                        onchange="ToolboxManager3.updateChannelPreset(this.value)"
+                                        style="flex:1; padding:4px; border:1px solid #7dd3fc; border-radius:4px;">
+                                        <option value="custom">Custom (自定义)</option>
+                                        <option value="C8">普槽8 (Common 8#)</option>
+                                        <option value="C10">普槽10 (Common 10#)</option>
+                                    </select>
+                                </div>
+
+                                <div class="tb-input-row">
+                                    <label>高度 H</label>
+                                    <input type="number" id="tb3-sec-h" class="js-sec3-h" value="400">
+                                </div>
+                                <div class="tb-input-row">
+                                    <label>宽度 B</label>
+                                    <input type="number" id="tb3-sec-b" class="js-sec3-b" value="200">
+                                </div>
+                                <div class="tb-input-row" id="tb3-input-group-4">
+                                    <label>腹板 tw</label>
+                                    <input type="number" id="tb3-sec-tw" class="js-sec3-tw" value="8">
+                                </div>
+                                <div class="tb-input-row" id="tb3-input-group-tf">
+                                    <label>翼缘 tf</label>
+                                    <input type="number" id="tb3-sec-tf" class="js-sec3-tf" value="13">
+                                </div>
+                                <div class="tb-input-row" id="tb3-input-group-r" style="display:none;">
+                                    <label>内圆角 r</label>
+                                    <input type="number" id="tb3-sec-r" class="js-sec3-r" value="0">
+                                </div>
+
+                                <div
+                                    style="margin-top:20px; border-top:1px dashed #e2e8f0; padding-top:10px; font-size:0.8rem; color:#64748b; display:flex; justify-content:space-between;">
+                                    <span>Ix: <strong style="color:#334155;" id="tb3-res-ix">--</strong> mm⁴</span>
+                                    <span>Weight: <strong style="color:#334155;" id="tb3-res-w">--</strong> kg/m</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- MAIN DISPLAY -->
+                        <div class="tb-main-display"
+                            style="flex:1; display:flex; flex-direction:column; gap:20px; overflow-y:auto;">
+                            <!-- Canvas Card (Top) -->
+                            <div class="tb-card tb-canvas-card"
+                                style="flex:1; display:flex; align-items:center; justify-content:center; min-height:450px; background:white; position:relative;">
+                                <div
+                                    style="position:absolute; top:15px; left:15px; font-weight:700; color:#cbd5e1; font-size:1.5rem;">
+                                    VIEW</div>
+                                <canvas id="tb3-sec-canvas" style="width:100%; height:100%;"></canvas>
+                            </div>
+
+                            <!-- Results Card (Bottom) -->
+                            <div class="tb-card tb-results-card" style="padding:25px;">
+                                <div class="tb-res-header-bar"
+                                    style="border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                                    <div>
+                                        <span style="font-weight:700; color:#1e293b; font-size:1.1rem;">截面参数计算结果
+                                            (Calculated Properties)</span>
+                                    </div>
+                                    <span class="tb-badge-std"
+                                        style="background:#e0f2fe; color:#0284c7; padding:5px 10px; border-radius:20px;">PRO
+                                        MODE</span>
+                                </div>
+                                <div class="tb-results-grid tb-res-grid" id="tb3-sec-results"
+                                    style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:20px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Continuous Beam -->
+                <div id="tb3-tab-beam" class="tb3-tab-content hidden" style="height:100%;">
+                    <div class="tb-layout-split" style="display:flex; height:100%;">
+                        <!-- Left Controls -->
+                        <div class="tb-sidebar"
+                            style="width:360px; padding:20px; padding-bottom:80px; background:white; overflow-y:auto; border-right:1px solid #e2e8f0; display:flex; flex-direction:column; gap:20px;">
+
+                            <!-- Section Link (Mini) -->
+                            <div class="tb-card"
+                                style="border-left:4px solid #3b82f6; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                                <div class="tb-strip-title"
+                                    style="color:#1e293b; font-weight:700; display:flex; gap:8px; align-items:center; margin-bottom:15px;">
+                                    <span style="color:#3b82f6;">📎</span> 截面参数
+                                </div>
+                                <div class="tb-input-row" style="margin-bottom:8px;">
+                                    <label>高度 H</label>
+                                    <input type="number" class="js-sec3-h" id="tb3-beam-sec-h" value="400">
+                                </div>
+                                <div class="tb-input-row" style="margin-bottom:8px;">
+                                    <label>宽度 B</label>
+                                    <input type="number" class="js-sec3-b" id="tb3-beam-sec-b" value="200">
+                                </div>
+                                <div class="tb-input-row" style="margin-bottom:8px;">
+                                    <label>腹板 tw</label>
+                                    <input type="number" class="js-sec3-tw" id="tb3-beam-sec-tw" value="8">
+                                </div>
+                                <div class="tb-input-row" style="margin-bottom:8px;" id="tb3-beam-grp-tf">
+                                    <label>翼缘 tf</label>
+                                    <input type="number" class="js-sec3-tf" id="tb3-beam-sec-tf" value="13">
+                                </div>
+                                <div class="tb-input-row" id="tb3-beam-grp-r" style="display:none; margin-bottom:8px;">
+                                    <label>内圆角 r</label>
+                                    <input type="number" class="js-sec3-r" id="tb3-beam-sec-r" value="0">
+                                </div>
+                                <div
+                                    style="margin-top:10px; border-top:1px dashed #e2e8f0; padding-top:10px; font-size:0.8rem; color:#64748b; display:flex; justify-content:space-between;">
+                                    <span>Ix: <strong style="color:#334155;" id="tb3-beam-res-ix">--</strong>
+                                        mm⁴</span>
+                                    <span>Weight: <strong style="color:#334155;" id="tb3-beam-res-w">--</strong>
+                                        kg/m</span>
+                                </div>
+                            </div>
+
+                            <!-- Beam Parameters -->
+                            <div class="tb-card"
+                                style="border-left:4px solid #a855f7; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                                <div class="tb-strip-title"
+                                    style="color:#1e293b; font-weight:700; display:flex; gap:8px; align-items:center; margin-bottom:15px;">
+                                    <span style="color:#a855f7;">⬇</span> 连续梁参数
+                                </div>
+
+                                <!-- Spans -->
+                                <div style="margin-bottom:15px;">
+                                    <div
+                                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                        <label style="font-size:0.85rem; font-weight:700; color:#475569;">跨度设定
+                                            (SPANS)</label>
+                                        <button class="btn-sm" onclick="tb3AddSpan()"
+                                            style="color:#a855f7; background:#f3e8ff; border:none; padding:3px 8px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.8rem;">+
+                                            增加跨度</button>
+                                    </div>
+                                    <div id="tb3-span-list" style="display:flex; flex-direction:column; gap:6px;">
+                                    </div>
+                                </div>
+
+                                <!-- Modulus -->
+                                <div class="tb-input-row" style="margin-bottom:15px;">
+                                    <label>弹性模量 E (MPa)</label>
+                                    <input type="number" id="tb3-beam-e" value="206000">
+                                </div>
+
+                                <!-- Loads -->
+                                <div>
+                                    <div
+                                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                        <label style="font-size:0.85rem; font-weight:700; color:#475569;">附加荷载</label>
+                                        <button class="btn-sm" onclick="tb3AddLoad()"
+                                            style="color:#a855f7; background:#f3e8ff; border:none; padding:3px 8px; border-radius:4px; font-weight:600; cursor:pointer; font-size:0.8rem;">+
+                                            添加荷载</button>
+                                    </div>
+                                    <div id="tb3-load-list" style="display:flex; flex-direction:column; gap:8px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Calculations & Options -->
+                            <div class="tb-card"
+                                style="border:1px solid #e2e8f0; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                                <div
+                                    style="margin-bottom:15px; padding:10px; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; font-weight:600; color:#475569;">
+                                        <input type="checkbox" id="tb3-check-self-weight"
+                                            onchange="ToolboxManager3.toggleSelfWeight()">
+                                        计算自重
+                                        (Self-Weight)
+                                    </label>
+                                    <div style="margin-top:5px; font-size:0.8rem; color:#64748b; display:none;"
+                                        id="tb3-sw-detail">
+                                        放大系数: <input type="number" id="tb3-sw-factor" value="1.2" step="0.1"
+                                            style="width:50px; border:1px solid #ccc; border-radius:3px; padding:2px;"
+                                            oninput="ToolboxManager3.calculateBeam()">
+                                    </div>
+                                </div>
+
+                                <!-- Loads -->
+                                <button class="btn-full" onclick="ToolboxManager3.calculateBeam()"
+                                    style="background:#a855f7;">🔄 立即计算 (CALCULATE)</button>
+                            </div>
+                        </div>
+
+                        <!-- Right Results -->
+                        <div class="tb-main-display"
+                            style="flex:1; padding:20px; display:flex; flex-direction:column; gap:20px; overflow-y:auto; background:#f9fafb;">
+
+                            <!-- Summary Cards -->
+                            <div
+                                style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:15px;">
+                                <!-- Moment -->
+                                <div class="tb-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #ef4444;">
+                                    <div style="font-size:0.8rem; color:#64748b; font-weight:600;">设计弯矩 M_max</div>
+                                    <div style="font-size:1.5rem; font-weight:800; color:#ef4444; margin-top:5px;">
+                                        <span id="sum3-m-val">--</span> <span style="font-size:0.9rem;">kN·m</span>
+                                    </div>
+                                </div>
+                                <!-- Shear -->
+                                <div class="tb-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #10b981;">
+                                    <div style="font-size:0.8rem; color:#64748b; font-weight:600;">设计剪力 V_max</div>
+                                    <div style="font-size:1.5rem; font-weight:800; color:#10b981; margin-top:5px;">
+                                        <span id="sum3-v-val">--</span> <span style="font-size:0.9rem;">kN</span>
+                                    </div>
+                                </div>
+                                <!-- Reaction -->
+                                <div class="tb-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #3b82f6;">
+                                    <div style="font-size:0.8rem; color:#64748b; font-weight:600;">最大反力 R_max</div>
+                                    <div style="font-size:1.5rem; font-weight:800; color:#3b82f6; margin-top:5px;">
+                                        <span id="sum3-r-val">--</span> <span style="font-size:0.9rem;">kN</span>
+                                    </div>
+                                </div>
+                                <!-- Deflection -->
+                                <div class="tb-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border-top:4px solid #f97316;">
+                                    <div style="font-size:0.8rem; color:#64748b; font-weight:600;">最大挠度 f_max</div>
+                                    <div style="display:flex; align-items:baseline; gap:5px;">
+                                        <div style="font-size:1.5rem; font-weight:800; color:#f97316; margin-top:5px;">
+                                            <span id="sum3-def-val">--</span> <span style="font-size:0.9rem;">mm</span>
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="font-size:0.75rem; color:#94a3b8; margin-top:5px; border-top:1px dashed #e2e8f0; padding-top:5px;">
+                                        Limit: <span id="sum3-def-limit">--</span> <span id="sum3-def-status"
+                                            style="font-weight:700; padding:1px 5px; border-radius:3px; margin-left:5px;">--</span>
+                                        <span style="cursor:pointer; text-decoration:underline; color:#6366f1;"
+                                            onclick="ToolboxManager3.showDeflectionProcess()">ℹ</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Charts Stack -->
+                            <div style="display:flex; flex-direction:column; gap:15px;">
+                                <!-- Loads Schematic (Moved Top) -->
+                                <div class="chart-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                    <div
+                                        style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#7e22ce;">
+                                        <span>荷载示意图 Load Schematic</span>
+                                    </div>
+                                    <canvas id="chart3-loads" height="80"></canvas>
+                                </div>
+                                <!-- Reaction -->
+                                <div class="chart-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                    <div
+                                        style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#3b82f6;">
+                                        <span>支座反力图 Reaction (R)</span>
+                                        <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                                id="chart3-max-val-r">--</span> kN</span>
+                                    </div>
+                                    <canvas id="chart3-reaction" height="100"></canvas>
+                                </div>
+                                <!-- Moment -->
+                                <div class="chart-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                    <div
+                                        style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#ef4444;">
+                                        <span>弯矩图 Moment (ULS)</span>
+                                        <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                                id="chart3-max-val-m">--</span> kN·m</span>
+                                    </div>
+                                    <canvas id="chart3-moment" height="100"></canvas>
+                                </div>
+                                <!-- Shear -->
+                                <div class="chart-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                    <div
+                                        style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#10b981;">
+                                        <span>剪力图 Shear (ULS)</span>
+                                        <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                                id="chart3-max-val-v">--</span> kN</span>
+                                    </div>
+                                    <canvas id="chart3-shear" height="100"></canvas>
+                                </div>
+                                <!-- Deflection -->
+                                <div class="chart-card"
+                                    style="background:white; padding:15px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                    <div
+                                        style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700; color:#f97316;">
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <span>挠度图 Deflection (SLS)</span>
+                                            <a href="javascript:void(0)"
+                                                onclick="ToolboxManager3.showDeflectionProcess()"
+                                                style="font-size:0.75rem; background:#fff7ed; color:#ea580c; padding:2px 8px; border-radius:12px; text-decoration:none; border:1px solid #fed7aa;"
+                                                title="查看计算过程 View Calculation Process">? Process</a>
+                                        </div>
+                                        <span style="font-size:0.8rem; color:#94a3b8; font-weight:400;">Max: <span
+                                                id="chart3-max-val-def">--</span> mm</span>
+                                    </div>
+                                    <canvas id="chart3-deflection" height="100"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End Modal Body -->
+        </div> <!-- End Main Container -->
+    </div> <!-- End App Toolbox View -->
+
+    <script src="toolbox.js"></script>
+    <script src="toolbox2.js"></script>
+    <script src="toolbox3.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+# System files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.swp
+* - 副本*
+* - copy*
+
+# Archives (unless part of the release)
+*.rar
+*.zip
+*.7z
+
+# IDE settings
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
