@@ -27,7 +27,7 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             height: 100vh;
-            overflow: hidden;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -79,11 +79,13 @@
         }
 
         .cards-container {
-            display: flex;
-            gap: 50px;
+            display: grid;
+            grid-template-columns: repeat(2, 340px);
+            gap: 40px;
             justify-content: center;
-            flex-wrap: wrap;
             padding: 20px;
+            margin: 0 auto;
+            max-width: 900px;
         }
 
         .tool-card {
@@ -300,8 +302,12 @@
             }
 
             .cards-container {
+                grid-template-columns: 1fr;
                 gap: 20px;
                 padding: 20px;
+                width: 100%;
+                max-width: 400px;
+                margin: 0 auto;
             }
 
             .tool-card {
@@ -334,59 +340,63 @@
             <p>Structural Calculation Toolbox</p>
         </header>
         <div class="cards-container">
-            < !-- Card 1: Stone --><a href="石材钢架计算.html" class="tool-card"><svg class="card-icon-svg"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path
-                            d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm12-7H4v7h12v-7z" />
-                        <path d="M4 15h12" />
-                        <path d="M8 4v11" />
-                    </svg>
-                    <div class="tool-name">石材钢架计算</div>
-                    <div class="tool-desc">Stone Steel Frame Calculation</div>
-                </a>
-                < !-- Card 2: Ceiling --><a href="天花钢架转化层计算.html" class="tool-card"><svg class="card-icon-svg"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path
-                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                            <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
-                            <polyline points="7.5 19.79 7.5 14.6 3 12" />
-                            <polyline points="21 12 16.5 14.6 16.5 19.79" />
-                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                            <line x1="12" y1="22.08" x2="12" y2="12" />
-                        </svg>
-                        <div class="tool-name">天花钢架转换层计算</div>
-                        <div class="tool-desc">Ceiling Steel Frame Transfer Layer</div>
-                    </a>
-                    < !-- Card 3: Railing (Placeholder) -->
-                        <div class="tool-card disabled"><svg class="card-icon-svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 8H3" />
-                                <path d="M4 21V8" />
-                                <path d="M8 8v13" />
-                                <path d="M12 8v13" />
-                                <path d="M16 8v13" />
-                                <path d="M20 21V8" />
-                            </svg>
-                            <div class="tool-name">栏杆扶手计算</div>
-                            <div class="tool-desc">Railing & Handrail (Coming Soon)</div>
-                        </div>
-                        < !-- Card 4: Other (Dropdown) -->
-                            <div class="tool-card" style="cursor: default;"><svg class="card-icon-svg"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <rect x="3" y="3" width="7" height="7" />
-                                    <rect x="14" y="3" width="7" height="7" />
-                                    <rect x="14" y="14" width="7" height="7" />
-                                    <rect x="3" y="14" width="7" height="7" />
-                                </svg>
-                                <div class="tool-name">其他计算模块</div>
-                                <div class="tool-desc">Other Calculation Modules</div>
-                                < !-- Dropdown Menu -->
-                                    <div class="tool-dropdown"><a href="复合材料应力分配计算3.8.html" class="dropdown-item">⬡
-                                            复合材料计算 </a></div>
-                            </div>
+            <!-- Card 1: Stone -->
+            <a href="石材钢架计算.html" class="tool-card">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm12-7H4v7h12v-7z" />
+                    <path d="M4 15h12" />
+                    <path d="M8 4v11" />
+                </svg>
+                <div class="tool-name">石材钢架计算</div>
+                <div class="tool-desc">Stone Steel Frame Calculation</div>
+            </a>
+            <!-- Card 2: Ceiling -->
+            <a href="天花钢架转化层计算.html" class="tool-card">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                    <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                    <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                <div class="tool-name">天花钢架转换层计算</div>
+                <div class="tool-desc">Ceiling Steel Frame Transfer Layer</div>
+            </a>
+            <!-- Card 3: Railing (Placeholder) -->
+            <div class="tool-card disabled">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M21 8H3" />
+                    <path d="M4 21V8" />
+                    <path d="M8 8v13" />
+                    <path d="M12 8v13" />
+                    <path d="M16 8v13" />
+                    <path d="M20 21V8" />
+                </svg>
+                <div class="tool-name">栏杆扶手计算</div>
+                <div class="tool-desc">Railing & Handrail (Coming Soon)</div>
+            </div>
+            <!-- Card 4: Other (Dropdown) -->
+            <div class="tool-card" style="cursor: default;">
+                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                <div class="tool-name">其他计算模块</div>
+                <div class="tool-desc">Other Calculation Modules</div>
+                <!-- Dropdown Menu -->
+                <div class="tool-dropdown">
+                    <a href="复合材料应力分配计算3.8.html" class="dropdown-item">⬡ 复合材料计算</a>
+                </div>
+            </div>
         </div>
     </div>
     <script>const canvas = document.getElementById('cityCanvas');
