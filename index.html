@@ -270,92 +270,130 @@
         .tool-card.disabled::before {
             display: none;
         }
+
+        /* Mobile Adaptation */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                overflow-y: auto;
+                display: block;
+                padding: 20px 0;
+            }
+
+            #cityCanvas {
+                position: fixed;
+            }
+
+            .home-header {
+                margin-top: 60px;
+                margin-bottom: 40px;
+                padding: 0 20px;
+            }
+
+            .home-header h1 {
+                font-size: 2rem;
+            }
+
+            .home-header p {
+                font-size: 0.9rem;
+                letter-spacing: 2px;
+            }
+
+            .cards-container {
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .tool-card {
+                width: 100%;
+                max-width: 340px;
+                height: auto;
+                min-height: 200px;
+                padding: 30px 20px;
+            }
+
+            .card-icon-svg {
+                width: 48px;
+                height: 48px;
+                margin-bottom: 15px;
+            }
+
+            .tool-name {
+                font-size: 1.25rem;
+            }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <!-- Dynamic Canvas Background -->
-    <canvas id="cityCanvas"></canvas>
-
+    <!-- Dynamic Canvas Background --><canvas id="cityCanvas"></canvas>
     <div class="home-container">
         <header class="home-header">
             <h1>结构计算工具箱</h1>
             <p>Structural Calculation Toolbox</p>
         </header>
-
         <div class="cards-container">
-            <!-- Card 1: Stone -->
-            <a href="石材钢架计算.html" class="tool-card">
-                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path
-                        d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm12-7H4v7h12v-7z" />
-                    <path d="M4 15h12" />
-                    <path d="M8 4v11" />
-                </svg>
-                <div class="tool-name">石材钢架计算</div>
-                <div class="tool-desc">Stone Steel Frame Calculation</div>
-            </a>
-
-            <!-- Card 2: Ceiling -->
-            <a href="天花钢架转化层计算.html" class="tool-card">
-                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path
-                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
-                    <polyline points="7.5 19.79 7.5 14.6 3 12" />
-                    <polyline points="21 12 16.5 14.6 16.5 19.79" />
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                    <line x1="12" y1="22.08" x2="12" y2="12" />
-                </svg>
-                <div class="tool-name">天花钢架转换层计算</div>
-                <div class="tool-desc">Ceiling Steel Frame Transfer Layer</div>
-            </a>
-
-            <!-- Card 3: Railing (Placeholder) -->
-            <div class="tool-card disabled">
-                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M21 8H3" />
-                    <path d="M4 21V8" />
-                    <path d="M8 8v13" />
-                    <path d="M12 8v13" />
-                    <path d="M16 8v13" />
-                    <path d="M20 21V8" />
-                </svg>
-                <div class="tool-name">栏杆扶手计算</div>
-                <div class="tool-desc">Railing & Handrail (Coming Soon)</div>
-            </div>
-
-            <!-- Card 4: Other (Dropdown) -->
-            <div class="tool-card" style="cursor: default;">
-                <svg class="card-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                </svg>
-                <div class="tool-name">其他计算模块</div>
-                <div class="tool-desc">Other Calculation Modules</div>
-
-                <!-- Dropdown Menu -->
-                <div class="tool-dropdown">
-                    <a href="复合材料应力分配计算3.8.html" class="dropdown-item">
-                        ⬡ 复合材料计算
+            < !-- Card 1: Stone --><a href="石材钢架计算.html" class="tool-card"><svg class="card-icon-svg"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm12-7H4v7h12v-7z" />
+                        <path d="M4 15h12" />
+                        <path d="M8 4v11" />
+                    </svg>
+                    <div class="tool-name">石材钢架计算</div>
+                    <div class="tool-desc">Stone Steel Frame Calculation</div>
+                </a>
+                < !-- Card 2: Ceiling --><a href="天花钢架转化层计算.html" class="tool-card"><svg class="card-icon-svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                            <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                            <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                            <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                        <div class="tool-name">天花钢架转换层计算</div>
+                        <div class="tool-desc">Ceiling Steel Frame Transfer Layer</div>
                     </a>
-                </div>
-            </div>
+                    < !-- Card 3: Railing (Placeholder) -->
+                        <div class="tool-card disabled"><svg class="card-icon-svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 8H3" />
+                                <path d="M4 21V8" />
+                                <path d="M8 8v13" />
+                                <path d="M12 8v13" />
+                                <path d="M16 8v13" />
+                                <path d="M20 21V8" />
+                            </svg>
+                            <div class="tool-name">栏杆扶手计算</div>
+                            <div class="tool-desc">Railing & Handrail (Coming Soon)</div>
+                        </div>
+                        < !-- Card 4: Other (Dropdown) -->
+                            <div class="tool-card" style="cursor: default;"><svg class="card-icon-svg"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="3" y="3" width="7" height="7" />
+                                    <rect x="14" y="3" width="7" height="7" />
+                                    <rect x="14" y="14" width="7" height="7" />
+                                    <rect x="3" y="14" width="7" height="7" />
+                                </svg>
+                                <div class="tool-name">其他计算模块</div>
+                                <div class="tool-desc">Other Calculation Modules</div>
+                                < !-- Dropdown Menu -->
+                                    <div class="tool-dropdown"><a href="复合材料应力分配计算3.8.html" class="dropdown-item">⬡
+                                            复合材料计算 </a></div>
+                            </div>
         </div>
     </div>
-
-    <script>
-        const canvas = document.getElementById('cityCanvas');
+    <script>const canvas = document.getElementById('cityCanvas');
         const ctx = canvas.getContext('2d');
 
-        let width, height;
+        let width,
+            height;
         let particles = [];
         let buildings = [];
 
@@ -370,11 +408,13 @@
         const COLOR_BUILDING_STROKE = 'rgba(56, 189, 248, 0.3)';
         const COLOR_PARTICLE = 'rgba(14, 165, 233, 0.5)';
         // Warm & Cool light palette
-        const LIGHT_COLORS = [
-            'rgba(56, 189, 248, 1)',  // Light Blue
-            'rgba(251, 191, 36, 1)',  // Amber/Gold
-            'rgba(14, 165, 233, 1)',  // Sky Blue
-            'rgba(245, 158, 11, 1)'   // Orange
+        const LIGHT_COLORS = ['rgba(56, 189, 248, 1)',
+            // Light Blue
+            'rgba(251, 191, 36, 1)',
+            // Amber/Gold
+            'rgba(14, 165, 233, 1)',
+            // Sky Blue
+            'rgba(245, 158, 11, 1)' // Orange
         ];
 
         function resize() {
@@ -397,6 +437,7 @@
                 // Create random windows/lights grid
                 const rows = Math.floor(this.h / 15);
                 const cols = Math.floor(this.w / 10);
+
                 for (let r = 0; r < rows; r++) {
                     for (let c = 0; c < cols; c++) {
                         if (Math.random() > 0.7) {
@@ -429,7 +470,9 @@
                 ctx.fillRect(drawX, drawY, this.w, this.h);
 
                 // Edges
-                ctx.strokeStyle = `rgba(56, 189, 248, ${0.2 + this.depth * 0.3})`;
+                ctx.strokeStyle = `rgba(56, 189, 248, $ {
+                    0.2 + this.depth * 0.3
+                })`;
                 ctx.lineWidth = 1 + this.depth;
                 ctx.strokeRect(drawX, drawY, this.w, this.h);
 
@@ -438,13 +481,21 @@
                 ctx.shadowBlur = 0;
 
                 const time = Date.now();
+
                 this.lights.forEach(l => {
                     const brightness = (Math.sin(time * l.blinkSpeed + l.phase) + 1) / 2;
                     const alpha = 0.1 + brightness * 0.7;
 
                     // Parse RGB from rgba string to apply new alpha
                     const rgb = l.color.substring(0, l.color.lastIndexOf(','));
-                    ctx.fillStyle = `${rgb}, ${alpha})`;
+
+                    ctx.fillStyle = `$ {
+                        rgb
+                    }
+
+                    , $ {
+                        alpha
+                    })`;
 
                     ctx.fillRect(drawX + l.x, drawY + l.y, 4, 8);
                 });
@@ -473,7 +524,10 @@
                 ctx.beginPath();
                 const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.len);
                 grad.addColorStop(0, `rgba(56, 189, 248, 0)`);
-                grad.addColorStop(1, `rgba(56, 189, 248, ${this.alpha})`);
+
+                grad.addColorStop(1, `rgba(56, 189, 248, $ {
+                            this.alpha
+                        })`);
                 ctx.strokeStyle = grad;
                 ctx.lineWidth = 1;
                 ctx.moveTo(this.x, this.y);
@@ -484,15 +538,18 @@
 
         function initBuildings() {
             buildings = [];
+
             for (let i = 0; i < BUILDING_COUNT; i++) {
                 buildings.push(new Building());
             }
+
             // Sort by depth so far buildings draw first
             buildings.sort((a, b) => a.depth - b.depth);
         }
 
         function initParticles() {
             particles = [];
+
             for (let i = 0; i < PARTICLE_COUNT; i++) {
                 particles.push(new Particle());
             }
@@ -522,11 +579,13 @@
             ctx.beginPath();
             // Vertical lines - slightly moving with mouse
             const gridOffset = (mouseX - width / 2) * 0.05;
+
             for (let x = -width; x <= width * 2; x += 100) {
                 // Perspective lines fan out from center
                 ctx.moveTo(x + gridOffset, height);
                 ctx.lineTo(width / 2 + (x - width / 2) * 0.1, 0);
             }
+
             ctx.stroke();
 
             // Buildings

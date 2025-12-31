@@ -1,18 +1,18 @@
 @echo off
 setlocal enabledelayedexpansion
 chcp 65001 >nul
-title GitHub Upload Assistant
+title GitHub One-Click Update
 color 0A
 
-:: Hardcoded Git Path found on system
+:: Hardcoded Git Path
 set "GIT_EXE=C:\Program Files\Git\cmd\git.exe"
 
 echo ========================================================
-echo          Composite Calc - GitHub Upload Assistant
+echo          Web-MSteel Update Assistant
 echo ========================================================
 echo.
 
-:: Verify Git exists at the specific path
+:: 1. Verify Git
 if not exist "%GIT_EXE%" (
     echo [ERROR] Could not find Git at: %GIT_EXE%
     echo Please reinstall Git for Windows.
@@ -20,75 +20,62 @@ if not exist "%GIT_EXE%" (
     exit
 )
 
-echo [1/5] Initializing Git repository...
+:: 2. Initialize if needed
 if not exist .git (
+    echo [Init] Initializing repository...
     "%GIT_EXE%" init
-    echo Repository initialized.
-) else (
-    echo Repository already exists.
 )
+
+:: 3. Auto-Sync index.html
+echo [Sync] Updating index.html from 首页.html...
+copy /Y 首页.html index.html >nul
+echo Done.
 echo.
 
-echo [2/5] Adding files...
+:: 4. Add Files
+echo [Add] Adding changes...
 "%GIT_EXE%" add .
-echo Files added.
+
+:: 5. Commit
+echo.
+set /p COMMIT_MSG="Enter update description (Press Enter for 'Update'): "
+if "!COMMIT_MSG!"=="" set "COMMIT_MSG=Update"
+"%GIT_EXE%" commit -m "!COMMIT_MSG!"
 echo.
 
-echo [3/5] Committing files...
-"%GIT_EXE%" commit -m "Initial commit of Composite Calc"
-echo Files committed.
-echo.
-
-echo [4/5] Setting main branch...
-"%GIT_EXE%" branch -M main
-echo Branch set to 'main'.
-echo.
-
-echo ========================================================
-echo                 STEP: LINK GITHUB REPO
-echo ========================================================
-echo 1. Go to https://github.com/new
-echo 2. Create a repository named: composite-calc
-echo 3. Copy the HTTPS URL (ends in .git)
-echo.
-echo    Example: https://github.com/Start-Moon/composite-calc.git
-echo.
-echo ========================================================
-echo    PLEASE PASTE THE URL BELOW AND PRESS ENTER
-echo ========================================================
-echo.
-
-set /p REPO_URL="Paste URL here: "
-
-if "%REPO_URL%"=="" (
+:: 6. Check Remote
+"%GIT_EXE%" remote get-url origin >nul 2>&1
+if %errorlevel% NEQ 0 (
+    echo ========================================================
+    echo    FIRST TIME SETUP: LINK REPOSITORY
+    echo ========================================================
+    echo Please paste your GitHub URL (e.g., https://github.com/user/repo.git)
     echo.
-    echo [ERROR] No URL provided.
-    echo Please run the script again and paste the URL.
-    pause
-    exit
+    set /p REPO_URL="Repository URL: "
+    if "!REPO_URL!"=="" (
+        echo [ERROR] No URL provided.
+        pause
+        exit
+    )
+    "%GIT_EXE%" branch -M main
+    "%GIT_EXE%" remote add origin !REPO_URL!
 )
 
-echo.
-echo [5/5] Pushing to GitHub...
-echo (A browser window or login prompt may appear)
-echo.
-
-"%GIT_EXE%" remote remove origin >nul 2>&1
-"%GIT_EXE%" remote add origin %REPO_URL%
+:: 7. Push
+echo [Push] Uploading to GitHub...
 "%GIT_EXE%" push -u origin main
 
 if %errorlevel% EQU 0 (
     echo.
     echo ========================================================
-    echo               UPLOAD SUCCESSFUL!
+    echo               UPDATE SUCCESSFUL!
     echo ========================================================
-    echo You can now verify your files on GitHub.
 ) else (
     echo.
     echo ========================================================
-    echo               UPLOAD FAILED
+    echo               UPDATE FAILED
     echo ========================================================
-    echo Check the error message above.
+    echo Check your internet connection or GitHub permissions.
 )
 
 echo.

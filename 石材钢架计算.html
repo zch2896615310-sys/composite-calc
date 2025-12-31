@@ -705,8 +705,20 @@
 <body>
 
     <div class="app-container" id="app-main-view">
+        <!-- Mobile Menu Toggle -->
+        <div class="mobile-menu-btn" onclick="toggleSidebar()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </div>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
         <!-- SIDEBAR INPUTS -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <!-- HISTORY LIST (MOVED TO TOP) -->
             <div class="sidebar-section">
                 <div class="sidebar-title">| HISTORY (历史记录)</div>
@@ -2140,6 +2152,8 @@
                     <button class="btn-black" onclick="closeToolbox()"
                         style="display:flex; align-items:center; gap:5px; padding:5px 15px; border-radius:6px; background:#1f2937; color:white; border:none; cursor:pointer;"><span>←</span>
                         Back</button>
+                    <!-- Mobile Sidebar Toggle -->
+                    <button class="tb-menu-btn" onclick="toggleToolboxSidebar()">☰ 参数</button>
                     <span style="font-size:1.5rem">🧰</span>
                     <span id="toolbox-title-text" style="font-size:1.2rem; font-weight:700;">Web-MSteel
                         结构工具箱</span>
@@ -2509,6 +2523,8 @@
                     <button class="btn-black" onclick="closeToolbox2()"
                         style="display:flex; align-items:center; gap:5px; padding:5px 15px; border-radius:6px; background:#1f2937; color:white; border:none; cursor:pointer;"><span>←</span>
                         Back</button>
+                    <!-- Mobile Sidebar Toggle -->
+                    <button class="tb-menu-btn" onclick="toggleToolboxSidebar()">☰ 参数</button>
                     <span style="font-size:1.5rem">🧰</span>
                     <span id="toolbox2-title-text" style="font-size:1.2rem; font-weight:700;">Web-MSteel
                         结构工具箱 2 (Toolbox 2)</span>
@@ -2868,6 +2884,8 @@
                     <button class="btn-black" onclick="closeToolbox3()"
                         style="display:flex; align-items:center; gap:5px; padding:5px 15px; border-radius:6px; background:#1f2937; color:white; border:none; cursor:pointer;"><span>←</span>
                         Back</button>
+                    <!-- Mobile Sidebar Toggle -->
+                    <button class="tb-menu-btn" onclick="toggleToolboxSidebar()">☰ 参数</button>
                     <span style="font-size:1.5rem">🧰</span>
                     <span id="toolbox3-title-text" style="font-size:1.2rem; font-weight:700;">Web-MSteel
                         结构工具箱 3 (Toolbox 3)</span>
@@ -2896,7 +2914,7 @@
                             style="width:340px; padding:20px; padding-bottom:80px; background:white; border-right:1px solid #e2e8f0; overflow-y:auto; display:flex; flex-direction:column; gap:20px;">
 
                             <!-- Card 1: Section Parameters (Blue) -->
-                            <div class="tb-card tb-sidebar-card" style="height:fit-content;">
+                            <div class="tb-card" style="height:fit-content;">
                                 <div class="tb-panel-title"
                                     style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                                     <span

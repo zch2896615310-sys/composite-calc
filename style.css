@@ -555,19 +555,191 @@ select:focus {
 }
 
 @media (max-width: 1000px) {
+    .app-container {
+        flex-direction: column;
+    }
+
     .sidebar {
         position: fixed;
         left: -340px;
-        transition: left 0.3s;
-        z-index: 100;
-        height: 100%;
+        top: 0;
+        bottom: 0;
+        z-index: 1001 !important;
+        /* Overlay is 900, Inline was 10. Must be > 900 */
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        -webkit-overflow-scrolling: touch;
     }
 
     .sidebar.open {
         left: 0;
     }
 
-    .main-content {
-        padding: 20px;
+    /* Overlay when sidebar is open */
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 900;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        backdrop-filter: blur(2px);
     }
+
+    .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .main-content {
+        padding: 20px 15px;
+        width: 100%;
+    }
+
+    .row-2-col {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .main-header {
+        margin-top: 40px;
+        /* Space for menu button */
+    }
+
+    /* Mobile Menu Button */
+    .mobile-menu-btn {
+        display: flex !important;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 800;
+        background: white;
+        border: 1px solid var(--border);
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+}
+
+/* Default hidden menu button */
+.mobile-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+/* Toolbox Mobile Layout Enhancements */
+@media (max-width: 1000px) {
+
+    /* Main Page: Vertical Stack for Toolbox Buttons & Results */
+    .toolbox-entry,
+    .toolbox-results-row {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+
+    .toolbox-results-row>div {
+        width: 100% !important;
+    }
+
+    /* Toolbox Modal: Responsive Split Layout */
+    .tb-layout-split,
+    .tb-layout-grid {
+        display: block !important;
+        position: relative;
+    }
+
+    /* Sidebar becomes off-canvas on mobile */
+    .tb-sidebar,
+    .tb-sidebar-card {
+        position: fixed;
+        left: -340px;
+        top: 0;
+        bottom: 0;
+        height: 100% !important;
+        z-index: 2000;
+        background: white;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 300px !important;
+        max-width: 85vw;
+        border-right: 1px solid #e5e7eb;
+    }
+
+    .tb-sidebar.open,
+    .tb-sidebar-card.open {
+        left: 0;
+    }
+
+    /* Main View becomes full width */
+    .tb-main-view,
+    .tb-main-display {
+        width: 100% !important;
+        padding: 15px !important;
+        overflow-y: auto !important;
+        height: 100% !important;
+    }
+
+    /* Mobile Menu Button for Toolbox */
+    .tb-menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #2563eb;
+        font-weight: 600;
+        margin-right: 10px;
+        font-size: 0.85rem;
+    }
+
+    /* Toolbox Overlay */
+    .tb-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.65);
+        /* Darker background */
+        z-index: 10000;
+        /* Super high Z-Index */
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        backdrop-filter: blur(5px);
+        /* Stronger blur */
+        -webkit-backdrop-filter: blur(5px);
+        cursor: pointer;
+        pointer-events: auto;
+    }
+
+    .tb-sidebar,
+    .tb-sidebar-card {
+        z-index: 10001 !important;
+        /* Above overlay */
+    }
+
+    .tb-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* Default hidden toolbox menu button */
+.tb-menu-btn {
+    display: none;
 }

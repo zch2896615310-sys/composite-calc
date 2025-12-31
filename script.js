@@ -1596,3 +1596,130 @@ window.showCalcDetail = function (boxId, key, title) {
     // Scroll into view if needed (optional)
     // box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
+
+// Mobile Sidebar Toggle
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('active');
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+}
+
+// Toolbox Sidebar Toggle (Shared for T1, T2, T3)
+function toggleToolboxSidebar() {
+    const modals = ['app-toolbox-view', 'app-toolbox-view-2', 'app-toolbox-view-3']; // Assuming T3 has ID
+    let visibleModal = null;
+
+    // 1. Find the currently visible modal
+    for (const id of modals) {
+        const el = document.getElementById(id);
+        if (el && !el.classList.contains('hidden') && el.style.display !== 'none') {
+            visibleModal = el;
+            break;
+        }
+    }
+
+    if (visibleModal) {
+        // 2. Find the active tab inside the modal
+        const activeTab = visibleModal.querySelector('.tb-tab-content:not(.hidden)');
+        if (activeTab) {
+            // 3. Find the sidebar inside the active tab
+            // Note: Different tabs use different classes (.tb-sidebar or .tb-sidebar-card)
+            const sb = activeTab.querySelector('.tb-sidebar, .tb-sidebar-card, .tb-sidebar-panel');
+
+            if (sb) {
+                sb.classList.toggle('open');
+
+                // 4. Manage Overlay (Create if not exists)
+                let overlay = visibleModal.querySelector('.tb-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'tb-overlay';
+                    overlay.onclick = () => {
+                        sb.classList.remove('open');
+                        overlay.classList.remove('active');
+                    };
+                    visibleModal.appendChild(overlay);
+                }
+                overlay.classList.toggle('active');
+            }
+        }
+    }
+}
+
+// Corrected Toolbox Sidebar Toggle (Overrides previous definition)
+function toggleToolboxSidebar() {
+    console.log("toggleToolboxSidebar V2 called");
+    const modals = ['app-toolbox-view', 'app-toolbox-view-2', 'app-toolbox-view-3'];
+    let visibleModal = null;
+
+    // 1. Find the currently visible modal
+    for (const id of modals) {
+        const el = document.getElementById(id);
+        if (el && !el.classList.contains('hidden') && el.style.display !== 'none') {
+            visibleModal = el;
+            break;
+        }
+    }
+
+    if (visibleModal) {
+        // 2. Find the target sidebar more robustly
+        const sidebars = visibleModal.querySelectorAll('.tb-sidebar, .tb-sidebar-card, .tb-sidebar-panel');
+        let targetSidebar = null;
+
+        for (const sb of sidebars) {
+            const parentTab = sb.closest('.tb-tab-content, .tb2-tab-content, .tb3-tab-content');
+            if (parentTab) {
+                if (!parentTab.classList.contains('hidden') && parentTab.style.display !== 'none') {
+                    targetSidebar = sb;
+                    break;
+                }
+            } else {
+                targetSidebar = sb;
+                break;
+            }
+        }
+
+        if (targetSidebar) {
+            const isOpen = targetSidebar.classList.contains('open');
+
+            // Toggle State
+            if (isOpen) {
+                targetSidebar.classList.remove('open');
+            } else {
+                targetSidebar.classList.add('open');
+            }
+
+            // 3. Manage Overlay
+            let overlay = visibleModal.querySelector('.tb-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'tb-overlay';
+                overlay.onclick = (e) => {
+                    // Stop propagation to prevent immediate re-triggering if bubbling from somewhere
+                    e.stopPropagation();
+                    console.log('Overlay clicked - closing sidebar');
+
+                    const openSb = visibleModal.querySelector('.tb-sidebar.open, .tb-sidebar-card.open');
+                    if (openSb) openSb.classList.remove('open');
+                    overlay.classList.remove('active');
+                };
+                visibleModal.appendChild(overlay);
+            }
+
+            // Toggle Overlay
+            if (isOpen) {
+                overlay.classList.remove('active');
+            } else {
+                overlay.classList.add('active');
+            }
+        }
+    }
+}
