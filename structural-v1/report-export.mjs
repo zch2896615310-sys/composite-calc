@@ -65,7 +65,7 @@ export async function reportPayload(project,evaluation,context){
   if(instance.type==='member_stability'){const row=inputRows.find(r=>r[0]===labels.criticalMode);if(row)row[1]=input.criticalMode==='manual'?'人工采用值':'按公式复算';}
   if(instance.type==='bracket_strength'){const row=inputRows.find(r=>r[0]===labels.n);if(row)row[0]='共同承力连接件数';}
   if(instance.type==='bonding')formulas=[`Fpeel ≥ ${input.peelLimit} N·mm/mm`,`fpull ≥ ${input.pullLimit} MPa`];
-  if(instance.type==='member_stability'){formulas=ctx.result?.reportFormulas||[];const active=registry.get(instance.type).reportInputs?.(ctx);if(active)inputRows.splice(0,inputRows.length,...active);}
+  if(['member_stability','member_stability_legacy2020'].includes(instance.type)){formulas=ctx.result?.reportFormulas||[];const active=registry.get(instance.type).reportInputs?.(ctx);if(active)inputRows.splice(0,inputRows.length,...active);}
   sections.push({title:instance.name.replace(/^第[一二三四五六七八九十0-9]+节\s*/,''),type:instance.type,formulas,blocks,inputRows});
  }
  const findings=project.modules.filter(m=>!['shell','fem'].includes(m.type)).map(m=>({name:m.name,result:evaluation.results.get(m.id),error:evaluation.errors.get(m.id)}));

@@ -2,6 +2,7 @@ import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';
 import {onlineReport} from './online-report.mjs';
 import {loadSecondBook,loadWord0920,instantiateExample,restoreExampleResults} from './example-project.mjs';
 import {upgradeStabilityProject} from './modules/stability-2025.mjs';
+import {ensureLegacyWordComparison} from './engines/stability-legacy2020.mjs';
 import {analysisFor,checksFor,analysisNav,analysisChoices,analysisChecks,isAnalysis,createAnalysisCheck} from './fem-workspace.mjs?calculix-checks=19';
 import {setupBeamCurveHover} from './beam-curve.mjs?calculix-checks=19';
 import {fitBeamFigures} from './modules/beam.mjs?report-red=1';
@@ -28,7 +29,7 @@ try{
   store=saved?JSON.parse(saved):{projects:[newProject()],activeId:null};
   if(!Array.isArray(store.projects)||!store.projects.length)throw Error('项目列表为空');
   store.projects.forEach(validateProject);
-  if(store.projects.map(upgradeStabilityProject).some(Boolean)){try{localStorage.setItem(KEY,JSON.stringify(store));}catch{recoveryBlocked=true;setTimeout(()=>toast('2025稳定性已在当前会话升级；存储空间不足，自动保存暂停，请导出项目备份。'),500);}}
+  if(store.projects.map(p=>{const upgraded=upgradeStabilityProject(p),added=ensureLegacyWordComparison(p);return upgraded||added;}).some(Boolean)){try{localStorage.setItem(KEY,JSON.stringify(store));}catch{recoveryBlocked=true;setTimeout(()=>toast('稳定性模块已在当前会话更新；存储空间不足，自动保存暂停，请导出项目备份。'),500);}}
   activeId=store.projects.some(p=>p.id===store.activeId)?store.activeId:store.projects[0].id;
 }catch(e){
   try{const previous=localStorage.getItem(KEY);if(previous)localStorage.setItem(KEY+'.recovery.'+Date.now(),previous);}catch{recoveryBlocked=true;}
@@ -50,7 +51,7 @@ function library(){
  const row=d=>`<div class="library-row"><div class="library-symbol">${esc(d.symbol)}</div><div><h3>${esc(d.title)}</h3><p>${esc(d.description)}</p></div><button data-action="add" data-type="${d.type}">＋ 添加</button></div>`;
  const main=['loads','section','beam'].map(type=>row(registry.get(type))).join('');
  const analysis=`<div class="library-row fem-library-entry"><div class="library-symbol">▦</div><div><h3>有限元分析</h3><p>纯石材 / 蜂窝复合石材；建模、彩色云图、板与连接验算集中在同一工作区。</p></div><button data-action="fem-choose" ${defaultFem?'':'disabled title="有限元在线服务待接入"'}>选择材料</button></div>`;
- const checks=['check','column_strength','column_deflection','hanger_demand','member_stability','bracket_strength','anchor_test'].map(type=>row(registry.get(type))).join('');
+ const checks=['check','column_strength','column_deflection','hanger_demand','member_stability','member_stability_legacy2020','bracket_strength','anchor_test'].map(type=>row(registry.get(type))).join('');
  return `<h3 class="library-category">常用计算</h3>${main}${analysis}<p class="hint">${services.solverBase?'有限元由已配置的在线服务运行。':'有限元服务待接入；当前可使用截面、连续梁、荷载与构件验算。'}</p><details class="library-more"><summary>其他构件验算</summary>${checks}</details><details class="library-more"><summary>单独添加板与连接验算（已有分析时）</summary><p class="hint">通常直接进入有限元工作区，在里面启用所需验算即可。</p>${analysisChecks.map(([type])=>row(registry.get(type))).join('')}</details>`;
 }
 function extra(){return {femResults,jobs,defaultFem};}
@@ -228,7 +229,7 @@ $('#import-file').addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;
   try{
     if(file.size>5_000_000)throw Error('项目文件大于 5 MB');
-    const p=validateProject(JSON.parse(await file.text()));upgradeStabilityProject(p);
+    const p=validateProject(JSON.parse(await file.text()));upgradeStabilityProject(p);ensureLegacyWordComparison(p);
     const ids=new Map(p.modules.map(m=>[m.id,crypto.randomUUID()]));
     for(const m of p.modules){m.id=ids.get(m.id);for(const key of Object.keys(m.input).filter(k=>k.endsWith('Id')))if(m.input[key]&&ids.has(m.input[key]))m.input[key]=ids.get(m.input[key]);}
     p.id=crypto.randomUUID();p.name+='（导入）';store.projects.push(p);activeId=p.id;selectedId=p.modules[0]?.id;undoModule=null;mutate();restoreRuns();toast('已导入为独立项目。');

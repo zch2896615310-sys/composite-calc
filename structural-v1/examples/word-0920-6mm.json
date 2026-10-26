@@ -4314,6 +4314,40 @@
         }
       },
       {
+        "id": "b9aefd40-fd74-45b3-a299-18ed4d8c235e",
+        "type": "member_stability_legacy2020",
+        "version": 1,
+        "name": "立柱稳定性 · 原书2020标注",
+        "input": {
+          "codeEdition": "original-2020-labelled",
+          "loadId": "",
+          "beamId": "",
+          "sectionId": "",
+          "axis": "x",
+          "N": 1.2,
+          "M": 0.01,
+          "B": 1300,
+          "H": 2970,
+          "A": 189.17,
+          "W": 904.09,
+          "ix": 8.818,
+          "iy": 12.552,
+          "E": 206000,
+          "lx": 900,
+          "ly": 900,
+          "fy": 235,
+          "f": 215,
+          "phiX": 0.82,
+          "phiY": 0.91,
+          "phiB": 0.95,
+          "betaMx": 0.85,
+          "betaTx": 0.85,
+          "criticalMode": "manual",
+          "NEx": 33.2,
+          "coefficientBasis": "沿用0920原书采用值：φx=0.82、φy=0.91、φb=0.95、βmx=βtx=0.85；本模块未核实其查表及适用性。"
+        }
+      },
+      {
         "id": "d7fb5a4d-e2e0-46d5-b29d-31f9f84d480a",
         "type": "section",
         "version": 1,
@@ -4497,6 +4531,7 @@
         "横向角钢梁未提供原软件E/I与空间约束，按明确的单轴理想角钢假定复算，不能宣称与原书0.33mm完全一致；不调整惯性矩来迎合原数值。",
         "本文件没有给出板有限元网格、材料完整模型和边界条件，因此本示例不虚构板有限元结果；示例1的第二份Mathcad有限元分析仍可单独使用。"
       ]
-    }
+    },
+    "legacyStability2020Added": true
   }
 }
