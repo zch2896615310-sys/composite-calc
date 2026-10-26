@@ -42,7 +42,7 @@ export async function reportPayload(project,evaluation,context){
   }
   if(instance.type==='beam'){if(input.sectionId)for(const k of ['E','I'])derived.add(k);if(input.loadId)derived.add('q');}
   if(instance.type==='check'){if(input.sectionId)for(const k of ['A','W','I'])derived.add(k);if(input.beamId)for(const k of ['M','V'])derived.add(k);if(input.loadId||input.femId)derived.add('N');if(input.femId)derived.add('V');}
-  derived.add('model');if(input.mode==='exact')derived.add('adopted');if(instance.type==='loads'){derived.add('coreMode');derived.add('materialKind');if(materialKind(input)==='stone')for(const k of ['foil','cell','psi','gammaSteel'])derived.add(k);}
+  derived.add('basisNote');derived.add('model');if(input.mode==='exact')derived.add('adopted');if(instance.type==='loads'){derived.add('coreMode');derived.add('materialKind');if(materialKind(input)==='stone')for(const k of ['foil','cell','psi','gammaSteel'])derived.add(k);}
   for(const[k,v]of Object.entries(input)){if(!derived.has(k)&&(typeof v==='number'||typeof v==='string'&&!k.endsWith('Id')&&v.length<120))inputRows.push([labels[k]||k,number(v)]);}
   if(instance.type==='loads'){const modeRow=inputRows.find(r=>r[0]===labels.mode);if(modeRow)modeRow[1]=input.mode==='adopted'?'人工采用值':'按计算值';inputRows.unshift(['材料构成',materialKind(input)==='stone'?'纯石材':'复合材料']);if(materialKind(input)!=='stone')inputRows.push(['蜂窝芯自重口径',input.coreMode==='word-empirical'?'第一份Word经验式，芯高以mm代入':'标准单位计算（自动换算），ψ为kg/m³']);const row=inputRows.find(r=>r[0]===labels.psi);if(row&&input.coreMode==='word-empirical')row[0]='Word经验系数 Cword（芯高mm）';}
   if(instance.type==='shell'){const mode=inputRows.find(r=>r[0]===labels.mode);if(mode){mode[0]='分层壳计算口径';mode[1]=input.mode==='legacy'?'原模型已验证结果（校准参考）':'按第二份计算书荷载';}}
