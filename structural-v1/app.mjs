@@ -1,6 +1,6 @@
 import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';
 import {onlineReport} from './online-report.mjs';
-import {loadSecondBook,instantiateExample,restoreExampleResults} from './example-project.mjs';
+import {loadSecondBook,loadWord0920,instantiateExample,restoreExampleResults} from './example-project.mjs';
 import {analysisFor,checksFor,analysisNav,analysisChoices,analysisChecks,isAnalysis,createAnalysisCheck} from './fem-workspace.mjs?calculix-checks=19';
 import {setupBeamCurveHover} from './beam-curve.mjs?calculix-checks=19';
 import {fitBeamFigures} from './modules/beam.mjs?report-red=1';
@@ -48,7 +48,7 @@ function library(){
  const row=d=>`<div class="library-row"><div class="library-symbol">${esc(d.symbol)}</div><div><h3>${esc(d.title)}</h3><p>${esc(d.description)}</p></div><button data-action="add" data-type="${d.type}">＋ 添加</button></div>`;
  const main=['loads','section','beam'].map(type=>row(registry.get(type))).join('');
  const analysis=`<div class="library-row fem-library-entry"><div class="library-symbol">▦</div><div><h3>有限元分析</h3><p>纯石材 / 蜂窝复合石材；建模、彩色云图、板与连接验算集中在同一工作区。</p></div><button data-action="fem-choose" ${defaultFem?'':'disabled title="有限元在线服务待接入"'}>选择材料</button></div>`;
- const checks=['check','column_strength','column_deflection'].map(type=>row(registry.get(type))).join('');
+ const checks=['check','column_strength','column_deflection','hanger_demand','member_stability','bracket_strength','anchor_test'].map(type=>row(registry.get(type))).join('');
  return `<h3 class="library-category">常用计算</h3>${main}${analysis}<p class="hint">${services.solverBase?'有限元由已配置的在线服务运行。':'有限元服务待接入；当前可使用截面、连续梁、荷载与构件验算。'}</p><details class="library-more"><summary>其他构件验算</summary>${checks}</details><details class="library-more"><summary>单独添加板与连接验算（已有分析时）</summary><p class="hint">通常直接进入有限元工作区，在里面启用所需验算即可。</p>${analysisChecks.map(([type])=>row(registry.get(type))).join('')}</details>`;
 }
 function extra(){return {femResults,jobs,defaultFem};}
@@ -75,7 +75,7 @@ function render(){
   $('#project-name').value=p.name;$('#module-count').textContent=p.modules.filter(m=>!analysisFor(p,m)||isAnalysis(m)).length;
   renderModules(evaluation);
   const m=selected();$('#main').dataset.moduleType=m?.type||'';
-  if(!m){$('#main').innerHTML=`<div class="empty"><div class="eyebrow">YOUR STRUCTURAL WORKSPACE</div><h1>需要什么计算，<br>就添加什么模块。</h1><p>从一个截面开始，或直接建立连续梁。有限元分析需连接在线服务。每个模块独立命名、保存；需要传递参数时，再建立明确的引用关系。</p><button class="primary" data-action="catalog">＋ 添加第一个计算模块</button>${library()}<p class="hint">可从左侧“计算示例”载入第二份计算书有限元分析，查看原值1模型与已验证结果。项目以 JSON 文件保存，可在本机继续编辑。</p></div>`;return;}
+  if(!m){$('#main').innerHTML=`<div class="empty"><div class="eyebrow">YOUR STRUCTURAL WORKSPACE</div><h1>需要什么计算，<br>就添加什么模块。</h1><p>从一个截面开始，或直接建立连续梁。有限元分析需连接在线服务。每个模块独立命名、保存；需要传递参数时，再建立明确的引用关系。</p><button class="primary" data-action="catalog">＋ 添加第一个计算模块</button>${library()}<p class="hint">左侧“计算示例”提供原值1有限元分析，以及0920版6mm Word计算书两个独立项目。项目以 JSON 文件保存，可在本机继续编辑。</p></div>`;return;}
   const def=registry.get(m.type),index=p.modules.indexOf(m);
   const state=stateFor(m,evaluation);
   $('#main').innerHTML=`<div class="page-head"><div class="module-intro"><div class="eyebrow">${esc(p.name)} · 模块 ${String(index+1).padStart(2,'0')}</div><div class="module-heading"><input class="title-input" data-path="name" value="${esc(m.name)}" aria-label="模块名称"><span class="state-pill current-module-state ${state.tone}">${esc(state.label)}</span></div><p>${esc(def.description)}</p></div><div class="head-actions"><button data-action="up" ${index===0?'disabled':''}>上移</button><button data-action="down" ${index===p.modules.length-1?'disabled':''}>下移</button><details class="module-menu"><summary>更多操作</summary><div><button data-action="duplicate">复制模块</button><button class="danger-action" data-action="remove">移除模块</button>${undoModule?'<button data-action="undo">撤销移除</button>':''}</div></details></div></div><div id="fem-workspace-slot">${analysisNav(p,m,m=>stateFor(m,evaluation))}</div><div class="editor-tabs" role="tablist" aria-label="模块视图"><button role="tab" data-action="pane-input" aria-controls="module-inputs" aria-selected="true">输入参数</button><button role="tab" data-action="pane-results" aria-controls="module-results" aria-selected="false">计算结果</button></div>${def.render(context(m,evaluation))}`;
@@ -172,13 +172,13 @@ document.addEventListener('click',async event=>{
     if(action==='undo'&&undoModule?.projectId===activeId){project().modules.splice(undoModule.index,0,undoModule.module);selectedId=undoModule.module.id;undoModule=null;mutate();return;}
     if(action==='export'){download(safeName(project().name)+'.stonecalc.json',JSON.stringify(project(),null,2));toast('项目已导出，包含所有模块输入与引用关系。');return;}
     if(action==='import'){$('#import-file').click();return;}
-    if(action==='public-demo'){
+    if(action==='public-demo'||action==='word0920-demo'){
       button.disabled=true;
       try{
-        const bundle=await loadSecondBook(),p=validateProject(instantiateExample(bundle));
-        restoreExampleResults(p,bundle,femResults);
-        store.projects.push(p);activeId=p.id;selectedId=p.modules.find(m=>m.type==='fem').id;undoModule=null;
-        $('#templates').close();mutate();toast('已载入第二份计算书：原值1、18格分层壳及已验证结果快照。');
+        const word=action==='word0920-demo',bundle=await(word?loadWord0920():loadSecondBook()),p=validateProject(instantiateExample(bundle));
+        if(!word)restoreExampleResults(p,bundle,femResults);
+        store.projects.push(p);activeId=p.id;selectedId=(word?p.modules[0]:p.modules.find(m=>m.type==='fem')).id;undoModule=null;
+        $('#templates').close();mutate();toast(word?'已载入示例2：0920版6mm Word，18个模块与原文对照。':'已载入第二份计算书：原值1、18格分层壳及已验证结果快照。');
       }finally{button.disabled=false;}
       return;
     }

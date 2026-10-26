@@ -82,3 +82,6 @@
 .sidebar #projects{color:#f3f7fc;background-color:#253241;color-scheme:dark;-webkit-text-fill-color:#f3f7fc}
 .sidebar #projects option{color:#f3f7fc;background-color:#253241;-webkit-text-fill-color:#f3f7fc}
 .sidebar #projects option:checked{color:#fff;background-color:#245aa3;-webkit-text-fill-color:#fff}
+
+@media screen and (min-width:1200px){.connection-workspace{grid-template-columns:minmax(260px,320px) minmax(0,1fr)}}
+@media screen and (max-width:1199px){.connection-workspace{grid-template-columns:minmax(0,1fr)}}

@@ -1,5 +1,10 @@
 const exampleId='second-book-original-1';
 let loaded;
+let loadedWord;
+export function loadWord0920(){
+ if(!loadedWord)loadedWord=fetch(new URL('./examples/word-0920-6mm.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('0920 Word示例读取失败');return r.json();}).then(bundle=>{if(bundle.id!=='word-0920-6mm'||bundle.kind!=='calculation-example'||!Array.isArray(bundle.project?.modules))throw Error('0920 Word示例格式无效');return bundle;}).catch(error=>{loadedWord=null;throw error;});
+ return loadedWord;
+}
 export function loadSecondBook(){
   if(!loaded)loaded=fetch(new URL('./examples/second-book-original-1.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('第二份计算书示例读取失败');return r.json();}).then(bundle=>{
     if(bundle.id!==exampleId||bundle.kind!=='verified-fem-example'||!bundle.project?.modules||bundle.result?.postprocess!=='layered-shell-v1')throw Error('第二份计算书示例格式无效');
@@ -12,8 +17,8 @@ export function instantiateExample(bundle){
   project.id=crypto.randomUUID();
   for(const m of project.modules){
     m.id=ids.get(m.id);
-    for(const key of ['sectionId','loadId','beamId','serviceBeamId','femId','analysisId'])if(ids.has(m.input[key]))m.input[key]=ids.get(m.input[key]);
-    if(m.type==='fem')m.exampleSnapshot=exampleId;
+    for(const key of Object.keys(m.input).filter(k=>k.endsWith('Id')))if(ids.has(m.input[key]))m.input[key]=ids.get(m.input[key]);
+    if(m.type==='fem'&&bundle.kind==='verified-fem-example')m.exampleSnapshot=exampleId;
   }
   return project;
 }

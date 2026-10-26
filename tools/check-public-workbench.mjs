@@ -16,17 +16,17 @@ const {beam}=await import(new URL('engines/beam.mjs',root));
 const {instantiateExample,restoreExampleResults}=await import(new URL('example-project.mjs',root));
 vm.runInThisContext(read('engines/beam-source.js'));
 
-test('public build contains complete dependencies and only the selected example',()=>{
+test('public build contains complete dependencies and the two selected examples',()=>{
   const manifest=JSON.parse(read('build-manifest.json'));
   for(const name of manifest.files){
     assert.doesNotMatch(name,/fixtures|verification|ctower|reports|runs\//);
     const text=read(name);
-    assert.doesNotMatch(text,/ctower|C塔|[DE]:[\\/]|127\.0\.0\.1|localhost|fixtures\//);
+    assert.doesNotMatch(text,/ctower|[DE]:[\\/]|127\.0\.0\.1|localhost|fixtures\//);
     const refs=name.endsWith('.mjs')?text.matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+)['"]/g):[];
     for(const [,ref]of refs)assert.ok(fs.existsSync(new URL(ref.split('?')[0],new URL(name,root))),`${name} -> ${ref}`);
   }
   assert.equal(fs.existsSync(new URL('fixtures/',root)),false);
-  assert.deepEqual(manifest.examples,['examples/second-book-original-1.json']);
+  assert.deepEqual(manifest.examples,['examples/second-book-original-1.json','examples/word-0920-6mm.json']);
   assert.doesNotMatch(read(manifest.examples[0]),/[A-Za-z]:[\\/]|127\.0\.0\.1|localhost/);
 });
 

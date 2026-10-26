@@ -28,20 +28,20 @@ def block(text, start, end, new=''):
 
 def public_app(text):
     text = text.replace("import {calculixProject,solidFromShell} from './calculix-project.mjs?calculix-checks=19';\n", '')
-    text = "import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';\nimport {onlineReport} from './online-report.mjs';\nimport {loadSecondBook,instantiateExample,restoreExampleResults} from './example-project.mjs';\n" + text
+    text = "import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';\nimport {onlineReport} from './online-report.mjs';\nimport {loadSecondBook,loadWord0920,instantiateExample,restoreExampleResults} from './example-project.mjs';\n" + text
     text = replace(text, "KEY='stonecalc.workbench.v1'", "KEY='stonecalc.public.v1'")
     text = replace(text, "${main}${analysis}<details", "${main}${analysis}<p class=\"hint\">${services.solverBase?'有限元由已配置的在线服务运行。':'有限元服务待接入；当前可使用截面、连续梁、荷载与构件验算。'}</p><details")
     text = replace(text, '<button data-action="fem-choose">选择材料</button>', '<button data-action="fem-choose" ${defaultFem?\'\':\'disabled title="有限元在线服务待接入"\'}>选择材料</button>')
-    text = replace(text, '已有完整示例可从左侧“项目模板与验证”打开。', '可从左侧“计算示例”载入第二份计算书有限元分析，查看原值1模型与已验证结果。')
+    text = replace(text, '已有完整示例可从左侧“项目模板与验证”打开。', '左侧“计算示例”提供原值1有限元分析，以及0920版6mm Word计算书两个独立项目。')
     text = replace(text, '从一个截面开始，或直接建立连续梁、复合板有限元分析。', '从一个截面开始，或直接建立连续梁。有限元分析需连接在线服务。')
     text = block(text, "    if(action==='migrate-solid'){", "    if(action==='fem-tab'){", "    if(action==='migrate-solid')throw Error('请新建有限元分析；旧壳记录仅供查看。');\n")
-    text = block(text, "    if(action==='demo'){", "    if(action==='report'){", """    if(action==='public-demo'){
+    text = block(text, "    if(action==='demo'){", "    if(action==='report'){", """    if(action==='public-demo'||action==='word0920-demo'){
       button.disabled=true;
       try{
-        const bundle=await loadSecondBook(),p=validateProject(instantiateExample(bundle));
-        restoreExampleResults(p,bundle,femResults);
-        store.projects.push(p);activeId=p.id;selectedId=p.modules.find(m=>m.type==='fem').id;undoModule=null;
-        $('#templates').close();mutate();toast('已载入第二份计算书：原值1、18格分层壳及已验证结果快照。');
+        const word=action==='word0920-demo',bundle=await(word?loadWord0920():loadSecondBook()),p=validateProject(instantiateExample(bundle));
+        if(!word)restoreExampleResults(p,bundle,femResults);
+        store.projects.push(p);activeId=p.id;selectedId=(word?p.modules[0]:p.modules.find(m=>m.type==='fem')).id;undoModule=null;
+        $('#templates').close();mutate();toast(word?'已载入示例2：0920版6mm Word，18个模块与原文对照。':'已载入第二份计算书：原值1、18格分层壳及已验证结果快照。');
       }finally{button.disabled=false;}
       return;
     }
@@ -81,9 +81,9 @@ def public_index(text):
     text = text.replace('<small>结构计算工作台</small>', '<small>结构计算模块板V1</small>')
     text = replace(text, '<a class="brand" href="/">', '<a class="brand" href="../" title="返回结构计算工具箱">')
     text = text.replace('项目模板与验证', '计算示例')
-    text = block(text, '<div class="template-list">', '</div></dialog>\n  <dialog id="report">', '<div class="template-list"><div><h3>第二份计算书 · 有限元分析</h3><p>原值1 mm/s²，18格分层壳、28个参考面节点、10个挂点。保留材料、连接、CAD异型立柱、连续梁与原文对照章节。</p><p class="hint">附此前独立求解并验证的结果快照，可查看模型、云图和验算。修改模型后结果失效；重新求解需接入在线有限元服务。</p><button data-action="public-demo">载入第二份计算书 · 原值1</button></div>')
+    text = block(text, '<div class="template-list">', '</div></dialog>\n  <dialog id="report">', '<div class="template-list"><div><h3>示例1 · 第二份计算书有限元分析</h3><p>原值1 mm/s²，18格分层壳、28个参考面节点、10个挂点。保留材料、连接、CAD异型立柱、连续梁与原文对照章节。</p><p class="hint">附已验证结果快照；修改参数后可运行在线有限元重新计算，支持Word / PDF导出。</p><button data-action="public-demo">载入第二份计算书 · 原值1</button></div><div><h3>示例2 · C塔6mm Word计算书（0920）</h3><p>18个模块：面板荷载、挂件需求、立柱连续梁及稳定性、偏心角码、横向角钢梁、锚栓拉拔与原书逐项对照。</p><p class="hint">保留原书采用值；算术与建模差异单独列示。挂件和锚栓无试验报告时为待补数据。此书未提供板有限元模型，示例按原梁模型复现。</p><button data-action="word0920-demo">载入0920 Word · 6mm</button></div>')
     text = text.replace('连接本地计算服务…', '浏览器计算就绪…').replace('例如：C塔主龙骨32×32', '例如：主龙骨矩形钢管')
-    text = text.replace('app.mjs?report-red=20261026-v1','app.mjs?online-backend=20261026-v1')
+    text = text.replace('app.mjs?report-red=20261026-v1','app.mjs?word-example=20261026-v2')
     text = text.replace('修改模型后结果失效；重新求解需接入在线有限元服务。','修改模型后结果失效；可在在线有限元服务连接后重新求解。')
     return text
 
@@ -149,6 +149,21 @@ def second_book_example(source):
     return encoded
 
 
+def word0920_example(source):
+    project=json.loads((source / 'fixtures/word-0920-complete.stonecalc.json').read_text(encoding='utf-8-sig'))
+    if len(project['modules'])!=18 or any(m['type']=='fem' for m in project['modules']):
+        raise ValueError('Expected complete 18-module Word example without invented FE')
+    project['reportInfo']['source']=PureWindowsPath(project['reportInfo']['source']).name
+    for module in project['modules']:
+        if module['type']=='section' and module['input'].get('cad'):
+            module['input']['cad']['source']=PureWindowsPath(module['input']['cad']['source']).name
+    bundle={'schemaVersion':1,'id':'word-0920-6mm','kind':'calculation-example','project':project}
+    encoded=json.dumps(bundle,ensure_ascii=False,indent=2)+'\n'
+    if re.search(r'[A-Za-z]:[\\/]|localhost|127\.0\.0\.1',encoded):
+        raise ValueError('Local path or address in Word example')
+    return encoded
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('workbench', type=Path)
@@ -167,7 +182,7 @@ def main():
         if not path.is_relative_to(source) or not path.is_file():
             raise ValueError(f'Invalid client dependency: {name}')
         text = transform(name, path.read_text(encoding='utf-8-sig'))
-        if re.search(r'ctower|C塔|[DE]:[\\/]|127\.0\.0\.1|localhost|fixtures/', text):
+        if re.search(r'ctower|[DE]:[\\/]|127\.0\.0\.1|localhost|fixtures/', text):
             raise ValueError(f'Private template or local service reference in {name}')
         files[name] = text
         if name.endswith(('.mjs', '.js')):
@@ -186,7 +201,8 @@ def main():
     example = DEST / 'examples/second-book-original-1.json'
     example.parent.mkdir(exist_ok=True)
     example.write_text(second_book_example(source),encoding='utf-8',newline='\n')
-    (DEST / 'build-manifest.json').write_text(json.dumps({'edition':'public-v1','files':sorted(files),'examples':['examples/second-book-original-1.json']},ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
+    (DEST / 'examples/word-0920-6mm.json').write_text(word0920_example(source),encoding='utf-8',newline='\n')
+    (DEST / 'build-manifest.json').write_text(json.dumps({'edition':'public-v1','files':sorted(files),'examples':['examples/second-book-original-1.json','examples/word-0920-6mm.json']},ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
     print(f'Built {len(files)} public client files in {DEST}')
 
 

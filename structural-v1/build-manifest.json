@@ -23,11 +23,13 @@
     "model.mjs",
     "modules/beam.mjs",
     "modules/check.mjs",
+    "modules/connection-checks.mjs",
     "modules/fem.mjs",
     "modules/loads.mjs",
     "modules/original-comparison.mjs",
     "modules/section.mjs",
     "modules/shell.mjs",
+    "modules/word0920-comparison.mjs",
     "modules/worksheet-checks.mjs",
     "report-export.mjs",
     "report-status.mjs",
@@ -40,6 +42,7 @@
     "workbench-design.css"
   ],
   "examples": [
-    "examples/second-book-original-1.json"
+    "examples/second-book-original-1.json",
+    "examples/word-0920-6mm.json"
   ]
 }
