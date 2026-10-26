@@ -25,6 +25,7 @@
     "modules/check.mjs",
     "modules/fem.mjs",
     "modules/loads.mjs",
+    "modules/original-comparison.mjs",
     "modules/section.mjs",
     "modules/shell.mjs",
     "modules/worksheet-checks.mjs",
@@ -37,5 +38,8 @@
     "ui-state.mjs",
     "ui.mjs",
     "workbench-design.css"
+  ],
+  "examples": [
+    "examples/second-book-original-1.json"
   ]
 }

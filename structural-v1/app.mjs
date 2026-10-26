@@ -1,4 +1,5 @@
 import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';
+import {loadSecondBook,instantiateExample,restoreExampleResults} from './example-project.mjs';
 import {analysisFor,checksFor,analysisNav,analysisChoices,analysisChecks,isAnalysis,createAnalysisCheck} from './fem-workspace.mjs?calculix-checks=19';
 import {setupBeamCurveHover} from './beam-curve.mjs?calculix-checks=19';
 import {fitBeamFigures} from './modules/beam.mjs?report-red=1';
@@ -73,7 +74,7 @@ function render(){
   $('#project-name').value=p.name;$('#module-count').textContent=p.modules.filter(m=>!analysisFor(p,m)||isAnalysis(m)).length;
   renderModules(evaluation);
   const m=selected();$('#main').dataset.moduleType=m?.type||'';
-  if(!m){$('#main').innerHTML=`<div class="empty"><div class="eyebrow">YOUR STRUCTURAL WORKSPACE</div><h1>需要什么计算，<br>就添加什么模块。</h1><p>从一个截面开始，或直接建立连续梁。有限元分析需连接在线服务。每个模块独立命名、保存；需要传递参数时，再建立明确的引用关系。</p><button class="primary" data-action="catalog">＋ 添加第一个计算模块</button>${library()}<p class="hint">可从左侧“计算示例”载入截面与连续梁联动示例。项目以 JSON 文件保存，可在本机继续编辑。</p></div>`;return;}
+  if(!m){$('#main').innerHTML=`<div class="empty"><div class="eyebrow">YOUR STRUCTURAL WORKSPACE</div><h1>需要什么计算，<br>就添加什么模块。</h1><p>从一个截面开始，或直接建立连续梁。有限元分析需连接在线服务。每个模块独立命名、保存；需要传递参数时，再建立明确的引用关系。</p><button class="primary" data-action="catalog">＋ 添加第一个计算模块</button>${library()}<p class="hint">可从左侧“计算示例”载入第二份计算书有限元分析，查看原值1模型与已验证结果。项目以 JSON 文件保存，可在本机继续编辑。</p></div>`;return;}
   const def=registry.get(m.type),index=p.modules.indexOf(m);
   const state=stateFor(m,evaluation);
   $('#main').innerHTML=`<div class="page-head"><div class="module-intro"><div class="eyebrow">${esc(p.name)} · 模块 ${String(index+1).padStart(2,'0')}</div><div class="module-heading"><input class="title-input" data-path="name" value="${esc(m.name)}" aria-label="模块名称"><span class="state-pill current-module-state ${state.tone}">${esc(state.label)}</span></div><p>${esc(def.description)}</p></div><div class="head-actions"><button data-action="up" ${index===0?'disabled':''}>上移</button><button data-action="down" ${index===p.modules.length-1?'disabled':''}>下移</button><details class="module-menu"><summary>更多操作</summary><div><button data-action="duplicate">复制模块</button><button class="danger-action" data-action="remove">移除模块</button>${undoModule?'<button data-action="undo">撤销移除</button>':''}</div></details></div></div><div id="fem-workspace-slot">${analysisNav(p,m,m=>stateFor(m,evaluation))}</div><div class="editor-tabs" role="tablist" aria-label="模块视图"><button role="tab" data-action="pane-input" aria-controls="module-inputs" aria-selected="true">输入参数</button><button role="tab" data-action="pane-results" aria-controls="module-results" aria-selected="false">计算结果</button></div>${def.render(context(m,evaluation))}`;
@@ -171,12 +172,14 @@ document.addEventListener('click',async event=>{
     if(action==='export'){download(safeName(project().name)+'.stonecalc.json',JSON.stringify(project(),null,2));toast('项目已导出，包含所有模块输入与引用关系。');return;}
     if(action==='import'){$('#import-file').click();return;}
     if(action==='public-demo'){
-      $('#templates').close();
-      const p=newProject('示例 · 截面与连续梁联动');
-      const s=addModule(p,'section',extra());s.name='矩形钢管 · 100×60×4';
-      const b=addModule(p,'beam',extra());b.name='两跨连续梁 · 引用截面';b.input.sectionId=s.id;
-      const c=addModule(p,'check',extra());c.name='构件正应力与剪应力';c.input.sectionId=s.id;c.input.beamId=b.id;c.input.S=19984;c.input.t=4;
-      store.projects.push(p);activeId=p.id;selectedId=s.id;undoModule=null;mutate();toast('已新建独立示例，请按实际工程确认荷载与模型。');return;
+      button.disabled=true;
+      try{
+        const bundle=await loadSecondBook(),p=validateProject(instantiateExample(bundle));
+        restoreExampleResults(p,bundle,femResults);
+        store.projects.push(p);activeId=p.id;selectedId=p.modules.find(m=>m.type==='fem').id;undoModule=null;
+        $('#templates').close();mutate();toast('已载入第二份计算书：原值1、18格分层壳及已验证结果快照。');
+      }finally{button.disabled=false;}
+      return;
     }
     if(action==='report'){
       const p=project(),evaluation=evaluate(p,extra());
@@ -257,7 +260,15 @@ async function poll(m){
   }catch(e){jobs.set(m.id,{status:'error',message:e.message+'；可重新运行。'});if(selectedId===m.id)render();}
   finally{polling.delete(m.id);}
 }
-function restoreRuns(){if(!services.solverBase)return;for(const m of project().modules)if(m.type==='fem'&&m.lastRun&&!femResults.has(m.id))poll(m);}
+async function restoreRuns(){
+  const p=project();
+  if(p.modules.some(m=>m.exampleSnapshot==='second-book-original-1')){
+    try{restoreExampleResults(p,await loadSecondBook(),femResults);if(activeId===p.id)render();}
+    catch(e){toast('示例结果加载失败：'+e.message);}
+  }
+  if(!services.solverBase)return;
+  for(const m of p.modules)if(m.type==='fem'&&m.lastRun&&!femResults.has(m.id))poll(m);
+}
 
 setupBeamCurveHover();
 new ResizeObserver(()=>layoutCurrentBeam()).observe($('#main'));
@@ -268,6 +279,7 @@ try{
 }catch{$('#service-status').textContent=services.solverBase?'有限元服务连接失败 · 浏览器计算可用':'浏览器计算可用 · 有限元服务待接入';}
 for(const action of ['export-docx','export-pdf'])if(!services.reportBase){const b=document.querySelector(`[data-action="${action}"]`);b.disabled=true;b.title='Word/PDF 在线导出服务待接入，可先下载 HTML';}
 if(!services.reportBase){const note=document.createElement('p');note.className='hint public-export-note';note.textContent='Word/PDF 在线导出服务待接入。当前可预览或下载 HTML 计算书，不满足项以红色标注。';$('#report-body').before(note);}
+restoreRuns();
 
 for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',e=>{if(e.target===d){const box=d.getBoundingClientRect();if(e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom)d.close();}});
 window.addEventListener('beforeunload',()=>{if(store.projects.length)save();});

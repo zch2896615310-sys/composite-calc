@@ -13,25 +13,57 @@ globalThis.fetch=async url=>{requests.push(String(url));assert.equal(new URL(url
 const runtime=await import(new URL('public-runtime.mjs',root));
 const {registry,newProject,addModule,evaluate,validateProject}=await import(new URL('model.mjs',root));
 const {beam}=await import(new URL('engines/beam.mjs',root));
+const {instantiateExample,restoreExampleResults}=await import(new URL('example-project.mjs',root));
 vm.runInThisContext(read('engines/beam-source.js'));
 
-test('public build contains a complete local dependency graph and no project fixtures',()=>{
+test('public build contains complete dependencies and only the selected example',()=>{
   const manifest=JSON.parse(read('build-manifest.json'));
   for(const name of manifest.files){
-    assert.doesNotMatch(name,/fixtures|verification|original-comparison|ctower|reports|runs\//);
+    assert.doesNotMatch(name,/fixtures|verification|ctower|reports|runs\//);
     const text=read(name);
     assert.doesNotMatch(text,/ctower|C塔|[DE]:[\\/]|127\.0\.0\.1|localhost|fixtures\//);
     const refs=name.endsWith('.mjs')?text.matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+)['"]/g):[];
     for(const [,ref]of refs)assert.ok(fs.existsSync(new URL(ref.split('?')[0],new URL(name,root))),`${name} -> ${ref}`);
   }
   assert.equal(fs.existsSync(new URL('fixtures/',root)),false);
+  assert.deepEqual(manifest.examples,['examples/second-book-original-1.json']);
+  assert.doesNotMatch(read(manifest.examples[0]),/[A-Za-z]:[\\/]|127\.0\.0\.1|localhost/);
 });
 
 test('static deployment never connects to visitor localhost or starts backend jobs',()=>{
   assert.deepEqual(runtime.services,{solverBase:'',reportBase:'',cadBase:''});
   for(const kind of ['solver','report','cad'])assert.throws(()=>runtime.serviceURL(kind,'/api/test'),/待接入/);
   assert.equal(requests.length,1);
-  assert.equal(registry.has('original_comparison'),false);
+  assert.equal(registry.has('original_comparison'),true);
+});
+
+test('second-book example restores verified original-1 results and remaps every reference',()=>{
+  const bundle=JSON.parse(read('examples/second-book-original-1.json'));
+  const p=validateProject(instantiateExample(bundle)),p2=instantiateExample(bundle),results=new Map();
+  assert.notEqual(p.id,p2.id);
+  assert.ok(p.modules.every(m=>!p2.modules.some(other=>m.id===other.id)));
+  restoreExampleResults(p,bundle,results);
+  const fem=p.modules.find(m=>m.type==='fem'),ctx={femResults:results,jobs:new Map()},ev=evaluate(p,ctx);
+  assert.equal(fem.input.analysisKind,'layered');assert.equal(fem.input.mesh_mm,0);
+  assert.equal(fem.input.project.loads.y_acceleration,1);assert.equal(fem.input.project.loads.x_acceleration,1);
+  assert.equal(fem.input.project.supports.length,10);
+  assert.equal(results.get(fem.id).elements,18);assert.equal(results.get(fem.id).nodes,28);
+  assert.equal(ev.errors.size,0,JSON.stringify([...ev.errors]));
+  assert.equal(p.modules.length,bundle.project.modules.length);
+  const femCtx={...ctx,...ev,instance:fem,project:p,result:ev.results.get(fem.id),errorHtml:''};
+  const html=registry.get('fem').render(femCtx);
+  assert.ok(html.includes('示例结果快照'));assert.ok(html.includes('分层壳彩色云图'));assert.ok(html.includes('下载示例与结果快照'));
+  assert.ok(html.includes('data-action="module:run" disabled'));
+  const restored=validateProject(JSON.parse(JSON.stringify(p))),after=new Map();
+  restoreExampleResults(restored,bundle,after);
+  assert.equal(evaluate(restored,{...ctx,femResults:after}).errors.size,0);
+  fem.input.project.loads.y_acceleration=2;
+  const changed=evaluate(p,ctx);
+  assert.ok(changed.errors.has(p.modules.find(m=>m.type==='panel_strength').id));
+  const changedCtx={...ctx,...changed,instance:fem,project:p,result:changed.results.get(fem.id),errorHtml:''};
+  assert.ok(registry.get('fem').render(changedCtx).includes('原结果已失效'));
+  assert.ok(!registry.get('fem').render(changedCtx).includes('分层壳彩色云图'));
+  assert.ok(!registry.get('fem').report(changedCtx).includes('层平均横向剪应力'));
 });
 
 test('public sections and linked beams recalculate and survive project JSON round trip',()=>{

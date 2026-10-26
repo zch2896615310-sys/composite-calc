@@ -5,7 +5,8 @@ import loads from './modules/loads.mjs?calculix-checks=19';
 import check from './modules/check.mjs?report-red=1';
 import shell from './modules/shell.mjs?calculix-checks=19';
 import {worksheetModules} from './modules/worksheet-checks.mjs?calculix-checks=19';
-export const registry=new Map([loads,section,beam,fem,shell,check,...worksheetModules].map(m=>[m.type,m]));
+import originalComparison from './modules/original-comparison.mjs?v=2';
+export const registry=new Map([loads,section,beam,fem,shell,check,originalComparison,...worksheetModules].map(m=>[m.type,m]));
 export const newProject=(name='未命名计算项目')=>({schemaVersion:1,id:crypto.randomUUID(),name,modules:[]});
 export function addModule(project,type,context){
   const definition=registry.get(type);if(!definition)throw Error('模块类型未注册');

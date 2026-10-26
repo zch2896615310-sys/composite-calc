@@ -1,4 +1,4 @@
-import {serviceURL} from './public-runtime.mjs';
+import {services,serviceURL} from './public-runtime.mjs';
 import {esc,fmt,panel,table,metrics} from './ui.mjs?calculix-checks=19';
 import {shellControls,shellContour} from './shell-contour.mjs';
 const columns=['S11','S22','S12','SMax','SMin','SVM','S13Avg','S23Avg','SMaxAvg'];
@@ -18,7 +18,7 @@ const names={principal_plane:'面内最大主拉应力',mises_plane:'面内Mises
 function peaks(r){return r.summary.filter(s=>['ULS','ULS_MINUS'].includes(s.case)).flatMap(s=>s.layers.flatMap(l=>Object.entries(l.peaks).map(([k,p])=>[s.case,l.layer,names[k],fmt(p.value,9),`E${p.element} / 角点${p.corner} / IP${p.ip}`,p.xyz_mm.map(x=>fmt(x,4)).join(', ')])));}
 export function layeredResults(r,v={}){
  v=layeredView(r,v);const display=layerDisplay(r,v);
- return panel('分层壳彩色云图',shellControls(display,v)+shellContour(display,v))+panel('各层应力与控制位置',table(['工况','层','取值','MPa','控制位置','XYZ / mm'],peaks(r))+`<p class="hint">面内应力为各层厚度高斯位置的单元独立角点值；横向剪应力为层平均值。云图平滑不改变峰值。</p>`)+panel('分层壳计算结果',metrics([['壳单元',r.elements,'个'],['参考面节点',r.nodes,'个'],['ULS 最大 |UY|',r.summary.find(s=>s.case==='ULS').max_abs_uy_mm,'mm'],['最大反力平衡残差',Math.max(...r.summary.flatMap(s=>s.balance_residual_N.map(Math.abs))),'N']])+table(['工况','max |UY| / mm','ΣRx / N','ΣRy / N','ΣRz / N'],r.summary.map(s=>[s.case,fmt(s.max_abs_uy_mm,9),...s.resultant_N.map(x=>fmt(x,7))]))+`<p class="hint">${esc(r.basis)} 自编投影分层壳通过CalculiX矩阵接口求解，不是原生S4单元；不读取SAP结果。</p><div class="links"><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/input.json`))}" download>输入快照</a><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/summary.json`))}" download>完整结果</a><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/EQ_Y/panel.inp`))}" download>CalculiX输入</a><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/EQ_Y/precision_refinement.json`))}" download>数值精度记录</a></div>`);
+ return panel('分层壳彩色云图',shellControls(display,v)+shellContour(display,v))+panel('各层应力与控制位置',table(['工况','层','取值','MPa','控制位置','XYZ / mm'],peaks(r))+`<p class="hint">面内应力为各层厚度高斯位置的单元独立角点值；横向剪应力为层平均值。云图平滑不改变峰值。</p>`)+panel('分层壳计算结果',metrics([['壳单元',r.elements,'个'],['参考面节点',r.nodes,'个'],['ULS 最大 |UY|',r.summary.find(s=>s.case==='ULS').max_abs_uy_mm,'mm'],['最大反力平衡残差',Math.max(...r.summary.flatMap(s=>s.balance_residual_N.map(Math.abs))),'N']])+table(['工况','max |UY| / mm','ΣRx / N','ΣRy / N','ΣRz / N'],r.summary.map(s=>[s.case,fmt(s.max_abs_uy_mm,9),...s.resultant_N.map(x=>fmt(x,7))]))+`<p class="hint">${esc(r.basis)} 自编投影分层壳通过CalculiX矩阵接口求解，不是原生S4单元；不读取SAP结果。</p>${services.solverBase?`<div class="links"><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/input.json`))}" download>输入快照</a><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/summary.json`))}" download>完整结果</a><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/EQ_Y/panel.inp`))}" download>CalculiX输入</a><a href="${esc(serviceURL('solver',`/runs/${r.job_id}/EQ_Y/precision_refinement.json`))}" download>数值精度记录</a></div>`:r.exampleSnapshot?'<div class="links"><a href="examples/second-book-original-1.json" download>下载示例与结果快照</a></div>':''}`);
 }
 export function layeredReport(r){
  const p=r.snapshot.project,materials=Object.entries(p.materials).flatMap(([name,m])=>[
@@ -27,5 +27,5 @@ export function layeredReport(r){
  for(const l of p.layers){const quantity=l.material==='STEEL'?'SVM':l.material==='CORE'?'S23Avg':'SMax',v={case:'ULS',layer:l.name,quantity,ip:'1',average:'none'};h+=shellContour(layerDisplay(r,v),v);}
  const view={case:'SLS',quantity:'UY',layer:p.layers[0].name,ip:'1'};h+=shellContour(layerDisplay(r,view),view);
  h+=table(['工况','挂点','Rx / N','Ry / N','Rz / N'],r.summary.filter(s=>['ULS','ULS_MINUS'].includes(s.case)).flatMap(s=>Object.entries(s.reactions_N).map(([id,v])=>[s.case,id,...v.map(x=>fmt(x,9))])));
- return h+`<p>算例 ${esc(r.job_id)}；输入哈希 ${esc(r.input_hash)}。18格和50 mm对照通过仅对应已验证的原参数，变更参数后的结果由本机独立计算。</p>`;
+ return h+`<p>算例 ${esc(r.job_id)}；输入哈希 ${esc(r.input_hash)}。18格和50 mm对照通过仅对应已验证的原参数，变更参数后须连接在线有限元服务重新计算。</p>`;
 }
