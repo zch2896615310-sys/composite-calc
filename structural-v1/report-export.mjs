@@ -28,7 +28,18 @@ export async function reportPayload(project,evaluation,context){
    for(const k of Object.keys(input))if(!k.endsWith('Id')&&!active.includes(k))derived.add(k);
   }
   if(instance.type==='section'&&input.shape==='cad')formulas=['A = ∮(x dy − y dx) / 2','xc = ∮x² dy / (2A); yc = −∮y² dx / (2A)','Ix = −∮y³ dx / 3 − A yc²; Iy = ∮x³ dy / 3 − A xc²'];
-  if(instance.type==='section'&&input.shape==='cad')for(const k of ['h','b','tw','tf'])derived.add(k);
+  if(instance.type==='section'){
+   const unused={cad:['h','b','tw','tf'],custom:['h','b','tw','tf'],layers:['h','tw','tf'],angle:['tf'],rect:['tw','tf']}[input.shape]||[];
+   for(const k of unused)derived.add(k);
+  }
+  if(['hanger_demand','member_stability','bracket_strength','anchor_test'].includes(instance.type)){
+   const type=instance.type;
+   if(input.loadId)for(const k of ({hanger_demand:['qE','gd'],member_stability:['N'],bracket_strength:['G']}[type]||[]))derived.add(k);
+   if(input.beamId)for(const k of ({member_stability:['M'],bracket_strength:['F'],anchor_test:['N']}[type]||[]))derived.add(k);
+   if(input.sectionId)for(const k of ({member_stability:['A','W','ix','iy','E'],bracket_strength:['A','W']}[type]||[]))derived.add(k);
+   if(!input.loadId&&['member_stability','bracket_strength'].includes(type))for(const k of ['B','H'])derived.add(k);
+   if(type==='member_stability'&&input.criticalMode==='formula')derived.add('NEx');
+  }
   if(instance.type==='beam'){if(input.sectionId)for(const k of ['E','I'])derived.add(k);if(input.loadId)derived.add('q');}
   if(instance.type==='check'){if(input.sectionId)for(const k of ['A','W','I'])derived.add(k);if(input.beamId)for(const k of ['M','V'])derived.add(k);if(input.loadId||input.femId)derived.add('N');if(input.femId)derived.add('V');}
   derived.add('model');if(input.mode==='exact')derived.add('adopted');if(instance.type==='loads'){derived.add('coreMode');derived.add('materialKind');if(materialKind(input)==='stone')for(const k of ['foil','cell','psi','gammaSteel'])derived.add(k);}
@@ -41,6 +52,8 @@ export async function reportPayload(project,evaluation,context){
   if(instance.type==='bracket_strength'){const row=inputRows.find(r=>r[0]===labels.n);if(row)row[0]='共同承力连接件数';}
   if(instance.type==='bonding')for(const k of ['peel','pull','reportNo'])if(!input[k]){const row=inputRows.find(r=>r[0]===labels[k]);if(row)row[1]='未提供';}
   for(const k of ['loadId','sectionId','beamId','femId'])if(input[k]&&!(instance.type==='check'&&(input.kind==='member'?k==='femId':k!=='femId')))inputRows.unshift(['引用 '+({loadId:'荷载',sectionId:'截面',beamId:'梁分析',femId:'有限元'}[k]),project.modules.find(m=>m.id===input[k])?.name||'引用缺失']);
+  if(instance.type==='section'&&input.shape==='custom')input.rects.forEach((r,j)=>inputRows.push([`矩形${j+1}：x,y,b,h / mm；E / MPa`,[r.x,r.y,r.b,r.h,r.E].map(number).join(', ')]));
+  if(instance.type==='section'&&input.shape==='layers')input.layers.forEach((l,j)=>inputRows.push([`材料层${j+1}：t / mm；E / MPa`,[l.t,l.E].map(number).join(', ')]));
   if(instance.type==='section'&&input.shape==='cad'&&ctx.result){const r=ctx.result;inputRows.push(['CAD实际宽×高 / mm',`${r.bounds.xmax-r.bounds.xmin} × ${r.bounds.ymax-r.bounds.ymin}`],['轮廓来源',r.source.split(/[\\/]/).at(-1)]);}
   if(instance.type==='section'&&input.cad?.importInfo){const info=input.cad.importInfo;inputRows.push(['CAD单位换算 / mm每图形单位',number(info.unitScaleToMm)],['已选CAD对象',info.selectedHandles.join(', ')],['未采用CAD对象',info.excludedHandles.join(', ')]);if(info.converter)inputRows.push(['CAD转换器',info.converter],['源文件SHA-256',info.sourceSha256]);if(info.selectionWindow){const b=info.selectionWindow;inputRows.push(['CAD框选范围 / 原图单位',`(${number(b.xmin)}, ${number(b.ymin)}) — (${number(b.xmax)}, ${number(b.ymax)})`]);}}
   if(instance.type==='beam'&&ctx.result){for(const k of ['E','I','q'])inputRows.push(['实际采用 '+(labels[k]||k),number(ctx.result[k])]);blocks.unshift({type:'paragraph',text:'梁模型 '+input.model.replace(/\n/g,'；')});}
