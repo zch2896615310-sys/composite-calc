@@ -79,3 +79,6 @@
  @media(forced-colors:active){.module-item.active{border:2px solid Highlight}.fem-camera-presets button[aria-pressed=true],.fem-workspace-tabs>button[aria-current]{border:2px solid Highlight}.primary{border:2px solid ButtonText}}
 }
 @media print{.skip-link{display:none}}
+.sidebar #projects{color:#f3f7fc;background-color:#253241;color-scheme:dark;-webkit-text-fill-color:#f3f7fc}
+.sidebar #projects option{color:#f3f7fc;background-color:#253241;-webkit-text-fill-color:#f3f7fc}
+.sidebar #projects option:checked{color:#fff;background-color:#245aa3;-webkit-text-fill-color:#fff}

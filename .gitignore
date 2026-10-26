@@ -26,3 +26,8 @@ Desktop.ini
 
 # Dependencies
 node_modules/
+.cloud/
+site/
+backend/__pycache__/
+backend/engines/calculix/__pycache__/
+backend/fonts/

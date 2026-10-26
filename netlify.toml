@@ -1,0 +1,20 @@
+[build]
+  command = "node tools/build-cloud-runtime.mjs"
+  publish = "site"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions.api]
+  included_files = ["structural-v1/examples/second-book-original-1.json"]
+
+[functions.compute-background]
+  included_files = ["backend/**", ".cloud/runtime.tar.gz"]
+
+[functions.report-background]
+  included_files = ["backend/cloud_worker.py", "backend/report_docx.py", ".cloud/runtime.tar.gz", "node_modules/@sparticuz/chromium/bin/**", "backend/fonts/**"]
+  external_node_modules = ["@sparticuz/chromium"]

@@ -28,7 +28,7 @@ def block(text, start, end, new=''):
 
 def public_app(text):
     text = text.replace("import {calculixProject,solidFromShell} from './calculix-project.mjs?calculix-checks=19';\n", '')
-    text = "import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';\nimport {loadSecondBook,instantiateExample,restoreExampleResults} from './example-project.mjs';\n" + text
+    text = "import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';\nimport {onlineReport} from './online-report.mjs';\nimport {loadSecondBook,instantiateExample,restoreExampleResults} from './example-project.mjs';\n" + text
     text = replace(text, "KEY='stonecalc.workbench.v1'", "KEY='stonecalc.public.v1'")
     text = replace(text, "${main}${analysis}<details", "${main}${analysis}<p class=\"hint\">${services.solverBase?'有限元由已配置的在线服务运行。':'有限元服务待接入；当前可使用截面、连续梁、荷载与构件验算。'}</p><details")
     text = replace(text, '<button data-action="fem-choose">选择材料</button>', '<button data-action="fem-choose" ${defaultFem?\'\':\'disabled title="有限元在线服务待接入"\'}>选择材料</button>')
@@ -48,6 +48,7 @@ def public_app(text):
 """)
     text = block(text, "      if(action==='module:cad-example'){", "      registry.get(selected().type).action")
     text = replace(text, "fetch('http://127.0.0.1:8879/api/report'", "fetch(serviceURL('report','/api/report')")
+    text = replace(text, "const response=await fetch(serviceURL('report','/api/report'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const value=await response.json();if(!response.ok)throw Error(value.error||'导出失败');", "const value=await onlineReport(payload);")
     text = replace(text, "a.href=payload.format==='pdf'?value.pdf_url:value.docx_url", "a.href=reportDownloadURL(payload.format==='pdf'?value.pdf_url:value.docx_url)")
     text = replace(text, "      button.disabled=true;toast('正在生成含公式与结果图的计算书…');", "      if(!services.reportBase)throw Error('Word/PDF 在线导出服务待接入；可先下载 HTML 计算书。');\n      button.disabled=true;toast('正在生成含公式与结果图的计算书…');")
     text = replace(text, "fetch(definition.endpoint||'/api/fem'", "fetch(serviceURL('solver',definition.endpoint||'/api/fem')")
@@ -80,7 +81,8 @@ def public_index(text):
     text = text.replace('项目模板与验证', '计算示例')
     text = block(text, '<div class="template-list">', '</div></dialog>\n  <dialog id="report">', '<div class="template-list"><div><h3>第二份计算书 · 有限元分析</h3><p>原值1 mm/s²，18格分层壳、28个参考面节点、10个挂点。保留材料、连接、CAD异型立柱、连续梁与原文对照章节。</p><p class="hint">附此前独立求解并验证的结果快照，可查看模型、云图和验算。修改模型后结果失效；重新求解需接入在线有限元服务。</p><button data-action="public-demo">载入第二份计算书 · 原值1</button></div>')
     text = text.replace('连接本地计算服务…', '浏览器计算就绪…').replace('例如：C塔主龙骨32×32', '例如：主龙骨矩形钢管')
-    text = text.replace('app.mjs?report-red=20261026-v1','app.mjs?second-book=20261026-v1')
+    text = text.replace('app.mjs?report-red=20261026-v1','app.mjs?online-backend=20261026-v1')
+    text = text.replace('修改模型后结果失效；重新求解需接入在线有限元服务。','修改模型后结果失效；可在在线有限元服务连接后重新求解。')
     return text
 
 
@@ -107,7 +109,7 @@ def transform(name, text):
         variable = 'current' if name == 'modules/fem.mjs' else 'r'
         text = re.sub(r'<div class="links">.*?</div>', lambda m: '${services.solverBase?`'+m[0]+'`:'+variable+'.exampleSnapshot?\'<div class="links"><a href="examples/second-book-original-1.json" download>下载示例与结果快照</a></div>\':\'\'}', text)
     if name == 'modules/fem.mjs':
-        text = replace(text, "let output=`<div class=\"fem-runbar\">", "let output=(ctx.instance.exampleSnapshot?`<p class=\"result-notice\">${stale?'示例参数已修改，原结果已失效。':'当前显示第二份计算书已验证的示例结果快照。'}${services.solverBase?'可运行在线有限元重新计算。':'在线有限元服务待接入，暂不能重新求解。'}</p>`:'')+`<div class=\"fem-runbar\">")
+        text = replace(text, "let output=`<div class=\"fem-runbar\">", "let output=(ctx.instance.exampleSnapshot&&r?.exampleSnapshot?`<p class=\"result-notice\">${stale?'示例参数已修改，原结果已失效。':'当前显示第二份计算书已验证的示例结果快照。'}${services.solverBase?'可运行在线有限元重新计算。':'在线有限元服务待接入，暂不能重新求解。'}</p>`:'')+`<div class=\"fem-runbar\">")
         text = replace(text, "${isBusy||requestError?'disabled':''}", "${isBusy||requestError||!services.solverBase?'disabled':''}")
         text = text.replace('本地实体或分层壳独立求解', '实体或分层壳独立求解')
     if name == 'layered-results.mjs':
@@ -155,7 +157,7 @@ def main():
     files = {}
     while queue:
         name = queue.pop()
-        if name in files or name in ('public-runtime.mjs','example-project.mjs'):
+        if name in files or name in ('public-runtime.mjs','example-project.mjs','online-report.mjs'):
             continue
         path = (source / name).resolve()
         if not path.is_relative_to(source) or not path.is_file():

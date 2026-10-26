@@ -1,4 +1,5 @@
 import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';
+import {onlineReport} from './online-report.mjs';
 import {loadSecondBook,instantiateExample,restoreExampleResults} from './example-project.mjs';
 import {analysisFor,checksFor,analysisNav,analysisChoices,analysisChecks,isAnalysis,createAnalysisCheck} from './fem-workspace.mjs?calculix-checks=19';
 import {setupBeamCurveHover} from './beam-curve.mjs?calculix-checks=19';
@@ -192,7 +193,7 @@ document.addEventListener('click',async event=>{
     if(action==='export-docx'||action==='export-pdf'){
       if(!services.reportBase)throw Error('Word/PDF 在线导出服务待接入；可先下载 HTML 计算书。');
       button.disabled=true;toast('正在生成含公式与结果图的计算书…');
-      try{const p=project(),ev=evaluate(p,extra()),payload=await reportPayload(p,ev,context);payload.format=action==='export-pdf'?'pdf':'docx';const response=await fetch(serviceURL('report','/api/report'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const value=await response.json();if(!response.ok)throw Error(value.error||'导出失败');const a=document.createElement('a');a.href=reportDownloadURL(payload.format==='pdf'?value.pdf_url:value.docx_url);a.download=safeName(p.name)+'-结构计算书.'+payload.format;a.click();toast('计算书已生成。');}finally{button.disabled=false;}return;
+      try{const p=project(),ev=evaluate(p,extra()),payload=await reportPayload(p,ev,context);payload.format=action==='export-pdf'?'pdf':'docx';const value=await onlineReport(payload);const a=document.createElement('a');a.href=reportDownloadURL(payload.format==='pdf'?value.pdf_url:value.docx_url);a.download=safeName(p.name)+'-结构计算书.'+payload.format;a.click();toast('计算书已生成。');}finally{button.disabled=false;}return;
     }
     if(action.startsWith('module:')){
       if(action==='module:run'){await runFem(selected());return;}
