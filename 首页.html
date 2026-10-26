@@ -528,9 +528,7 @@
                 ctx.fillRect(drawX, drawY, this.w, this.h);
 
                 // Edges
-                ctx.strokeStyle = `rgba(56, 189, 248, $ {
-                    0.2 + this.depth * 0.3
-                })`;
+                ctx.strokeStyle = `rgba(56, 189, 248, ${0.2 + this.depth * 0.3})`;
                 ctx.lineWidth = 1 + this.depth;
                 ctx.strokeRect(drawX, drawY, this.w, this.h);
 
@@ -547,13 +545,7 @@
                     // Parse RGB from rgba string to apply new alpha
                     const rgb = l.color.substring(0, l.color.lastIndexOf(','));
 
-                    ctx.fillStyle = `$ {
-                        rgb
-                    }
-
-                    , $ {
-                        alpha
-                    })`;
+                    ctx.fillStyle = `${rgb}, ${alpha})`;
 
                     ctx.fillRect(drawX + l.x, drawY + l.y, 4, 8);
                 });
@@ -583,9 +575,7 @@
                 const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.len);
                 grad.addColorStop(0, `rgba(56, 189, 248, 0)`);
 
-                grad.addColorStop(1, `rgba(56, 189, 248, $ {
-                            this.alpha
-                        })`);
+                grad.addColorStop(1, `rgba(56, 189, 248, ${this.alpha})`);
                 ctx.strokeStyle = grad;
                 ctx.lineWidth = 1;
                 ctx.moveTo(this.x, this.y);
