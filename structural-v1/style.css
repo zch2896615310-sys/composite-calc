@@ -111,3 +111,5 @@ main .section-property-card td:nth-child(3){font-size:11px;color:#6a7b88}
 /* Failed report results stay red on screen, in HTML downloads and print. */
 .report-fail{color:#c00000!important;font-weight:600}
 @media print{.report-fail{color:#c00000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+#report-download:empty{display:none}#report-download a{display:inline-block;color:#2458ba;border:1px solid #ccd9e8;border-radius:5px;padding:9px 14px;text-decoration:none;background:#f2f6fc}

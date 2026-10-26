@@ -186,14 +186,14 @@ document.addEventListener('click',async event=>{
       const p=project(),evaluation=evaluate(p,extra());
       reportHTML=`<h1>${esc(p.name)}</h1><p>结构计算汇总 · ${new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'})}（北京时间）</p><p>章节按照项目模块顺序生成。每个模块附当前输入，计算假定和未计算状态单独列明。</p>${p.modules.length?p.modules.map((m,i)=>`<section class="report-section"><h2>${i+1}. ${esc(m.name)}</h2>${registry.get(m.type).report(context(m,evaluation))}<details><summary>当前输入快照</summary><pre>${esc(JSON.stringify(m.type==='loads'?loadReportInput(m.input):m.input,null,2))}</pre></details></section>`).join(''):'<p>项目还没有计算模块。</p>'}`;
       if(p.reportInfo){const states=p.modules.map(m=>[m.name,evaluation.results.get(m.id)?.state]).filter(([,s])=>s);reportHTML=reportHTML.replace('</h1>','</h1>'+p.reportInfo.paragraphs.map(t=>t.startsWith('公开示例载入此前')?'公开示例初始载入已验证结果快照；载入本身不触发在线求解。修改模型后请运行在线有限元，并使用与当前输入匹配的结果生成计算书。':t).map(t=>`<p>${esc(t)}</p>`).join('')+`<h2>项目校核状态</h2>`+states.map(([n,s])=>`<p>${esc(n)}：${esc(s)}</p>`).join(''));}
-      $('#report-body').innerHTML=reportHTML;markReportFailures($('#report-body'));reportHTML=$('#report-body').innerHTML;$('#report').showModal();return;
+      $('#report-download').replaceChildren();$('#report-body').innerHTML=reportHTML;markReportFailures($('#report-body'));reportHTML=$('#report-body').innerHTML;$('#report').showModal();return;
     }
     if(action==='download-report'){const style=await fetch('style.css?report-red=1').then(r=>r.text());download(safeName(project().name)+'-计算汇总.html',`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>${esc(project().name)}</title><style>${style}\nbody{background:#fff;max-width:1000px;margin:40px auto;padding:25px}details{display:block}details>pre{display:block}h1{font-size:28px}</style>${reportHTML}</html>`,'text/html');return;}
     if(action==='print-report'){window.print();return;}
     if(action==='export-docx'||action==='export-pdf'){
       if(!services.reportBase)throw Error('Word/PDF 在线导出服务待接入；可先下载 HTML 计算书。');
       button.disabled=true;toast('正在生成含公式与结果图的计算书…');
-      try{const p=project(),ev=evaluate(p,extra()),payload=await reportPayload(p,ev,context);payload.format=action==='export-pdf'?'pdf':'docx';const value=await onlineReport(payload);const a=document.createElement('a');a.href=reportDownloadURL(payload.format==='pdf'?value.pdf_url:value.docx_url);a.download=safeName(p.name)+'-结构计算书.'+payload.format;a.click();toast('计算书已生成。');}finally{button.disabled=false;}return;
+      try{const p=project(),ev=evaluate(p,extra()),payload=await reportPayload(p,ev,context);payload.format=action==='export-pdf'?'pdf':'docx';const value=await onlineReport(payload);const a=document.createElement('a');a.href=reportDownloadURL(payload.format==='pdf'?value.pdf_url:value.docx_url);a.download=safeName(p.name)+'-结构计算书.'+payload.format;a.click();a.textContent='点击下载 '+(payload.format==='pdf'?'PDF':'Word')+' 计算书';$('#report-download').replaceChildren(a);toast('计算书已生成，可使用预览顶部的下载链接。');}finally{button.disabled=false;}return;
     }
     if(action.startsWith('module:')){
       if(action==='module:run'){await runFem(selected());return;}
