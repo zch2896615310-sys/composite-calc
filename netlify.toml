@@ -16,5 +16,8 @@
   included_files = ["backend/**", ".cloud/runtime.tar.gz"]
 
 [functions.report-background]
-  included_files = ["backend/cloud_worker.py", "backend/report_docx.py", ".cloud/runtime.tar.gz", "node_modules/@sparticuz/chromium/bin/**", "backend/fonts/**"]
+  included_files = ["backend/cloud_worker.py", "backend/report_docx.py", ".cloud/runtime.tar.gz"]
+
+[functions.pdf-background]
+  included_files = ["node_modules/@sparticuz/chromium/bin/**", "backend/fonts/**"]
   external_node_modules = ["@sparticuz/chromium"]

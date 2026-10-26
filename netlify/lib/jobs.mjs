@@ -8,7 +8,8 @@ export async function getJob(id){
   const job=await store().get('jobs/'+id,{type:'json'});
   return job&&Date.now()-job.created<86400000?job:null;
 }
-export async function dispatch(req,id,kind){
-  const response=await fetch(new URL(`/.netlify/functions/${kind==='fem'?'compute':'report'}-background`,req.url),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+export async function dispatch(req,id,kind,format){
+  const worker=kind==='fem'?'compute':format==='pdf'?'pdf':'report';
+  const response=await fetch(new URL(`/.netlify/functions/${worker}-background`,req.url),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
   if(!response.ok)throw Error('后台任务启动失败：'+response.status);
 }

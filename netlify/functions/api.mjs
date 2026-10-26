@@ -17,7 +17,7 @@ export default async(req)=>{
         if(text.length>200000)return json({error:'有限元模型输入过大'},400);
       }else if(!payload.title||!Array.isArray(payload.sections)||!['pdf','docx'].includes(payload.format))return json({error:'计算书参数无效'},400);
       const id=jobId();await store().setJSON('jobs/'+id,{id,kind,created:Date.now(),status:'queued',message:kind==='fem'?'已加入在线有限元队列':'已加入计算书导出队列'});
-      await store().setJSON('inputs/'+id,payload);await dispatch(req,id,kind);
+      await store().setJSON('inputs/'+id,payload);await dispatch(req,id,kind,payload.format);
       return json({job_id:id,status:'queued'},202);
     }
     const jobMatch=/^\/api\/jobs\/([a-f0-9]{32})$/.exec(route);
