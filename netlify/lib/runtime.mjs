@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 import path from 'node:path';
+import {x as extract} from 'tar';
 let ready;
 export function command(exe,args,options={}){
   return new Promise((resolve,reject)=>{
@@ -14,7 +15,7 @@ export function command(exe,args,options={}){
 export function runtime(){
   if(!ready)ready=(async()=>{
     const dir='/tmp/stonecalc-runtime';await fs.mkdir(dir,{recursive:true});
-    await command('tar',['-xzf',path.join(process.cwd(),'.cloud/runtime.tar.gz'),'-C',dir]);
+    await extract({file:path.join(process.cwd(),'.cloud/runtime.tar.gz'),cwd:dir});
     return {python:path.join(dir,'bin/python'),env:{...process.env,STONECALC_CCX:path.join(dir,'bin/ccx'),LD_LIBRARY_PATH:path.join(dir,'lib'),OMP_NUM_THREADS:'1',OPENBLAS_NUM_THREADS:'1',PYTHONUTF8:'1',PYTHONDONTWRITEBYTECODE:'1'}};
   })().catch(e=>{ready=null;throw e;});return ready;
 }

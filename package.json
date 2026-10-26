@@ -6,6 +6,7 @@
   "dependencies": {
     "@netlify/blobs": "11.1.6",
     "@sparticuz/chromium": "153.0.0",
-    "puppeteer-core": "25.16.0"
+    "puppeteer-core": "25.16.0",
+    "tar": "7.5.22"
   }
 }
