@@ -3,6 +3,8 @@ import {onlineReport} from './online-report.mjs';
 import {loadSecondBook,loadWord0920,instantiateExample,restoreExampleResults} from './example-project.mjs';
 import {upgradeStabilityProject} from './modules/stability-2025.mjs';
 import {ensureLegacyWordComparison} from './engines/stability-legacy2020.mjs';
+import {ensureBiaxialAngleExample} from './engines/beam-biaxial.mjs';
+import {fitBiaxialFigures} from './modules/beam-biaxial.mjs';
 import {analysisFor,checksFor,analysisNav,analysisChoices,analysisChecks,isAnalysis,createAnalysisCheck} from './fem-workspace.mjs?calculix-checks=19';
 import {setupBeamCurveHover} from './beam-curve.mjs?calculix-checks=19';
 import {fitBeamFigures} from './modules/beam.mjs?report-red=1';
@@ -29,7 +31,7 @@ try{
   store=saved?JSON.parse(saved):{projects:[newProject()],activeId:null};
   if(!Array.isArray(store.projects)||!store.projects.length)throw Error('项目列表为空');
   store.projects.forEach(validateProject);
-  if(store.projects.map(p=>{const upgraded=upgradeStabilityProject(p),added=ensureLegacyWordComparison(p);return upgraded||added;}).some(Boolean)){try{localStorage.setItem(KEY,JSON.stringify(store));}catch{recoveryBlocked=true;setTimeout(()=>toast('稳定性模块已在当前会话更新；存储空间不足，自动保存暂停，请导出项目备份。'),500);}}
+  if(store.projects.map(p=>{const upgraded=upgradeStabilityProject(p),added=ensureLegacyWordComparison(p),biaxial=ensureBiaxialAngleExample(p);return upgraded||added||biaxial;}).some(Boolean)){try{localStorage.setItem(KEY,JSON.stringify(store));}catch{recoveryBlocked=true;setTimeout(()=>toast('计算模块已在当前会话更新；存储空间不足，自动保存暂停，请导出项目备份。'),500);}}
   activeId=store.projects.some(p=>p.id===store.activeId)?store.activeId:store.projects[0].id;
 }catch(e){
   try{const previous=localStorage.getItem(KEY);if(previous)localStorage.setItem(KEY+'.recovery.'+Date.now(),previous);}catch{recoveryBlocked=true;}
@@ -49,7 +51,7 @@ let toastTimer;
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),4000);}
 function library(){
  const row=d=>`<div class="library-row"><div class="library-symbol">${esc(d.symbol)}</div><div><h3>${esc(d.title)}</h3><p>${esc(d.description)}</p></div><button data-action="add" data-type="${d.type}">＋ 添加</button></div>`;
- const main=['loads','section','beam'].map(type=>row(registry.get(type))).join('');
+ const main=['loads','section','beam','beam_biaxial'].map(type=>row(registry.get(type))).join('');
  const analysis=`<div class="library-row fem-library-entry"><div class="library-symbol">▦</div><div><h3>有限元分析</h3><p>纯石材 / 蜂窝复合石材；建模、彩色云图、板与连接验算集中在同一工作区。</p></div><button data-action="fem-choose" ${defaultFem?'':'disabled title="有限元在线服务待接入"'}>选择材料</button></div>`;
  const checks=['check','column_strength','column_deflection','hanger_demand','member_stability','member_stability_legacy2020','bracket_strength','anchor_test'].map(type=>row(registry.get(type))).join('');
  return `<h3 class="library-category">常用计算</h3>${main}${analysis}<p class="hint">${services.solverBase?'有限元由已配置的在线服务运行。':'有限元服务待接入；当前可使用截面、连续梁、荷载与构件验算。'}</p><details class="library-more"><summary>其他构件验算</summary>${checks}</details><details class="library-more"><summary>单独添加板与连接验算（已有分析时）</summary><p class="hint">通常直接进入有限元工作区，在里面启用所需验算即可。</p>${analysisChecks.map(([type])=>row(registry.get(type))).join('')}</details>`;
@@ -90,7 +92,7 @@ function mountFemEditor(evaluation=evaluate(project(),extra())){
  setupFemEditor($('#main .fem-model-editor'),{...context(m,evaluation),effectiveProject},{commit(input){if(selected()?.id!==m.id)return;registry.get('fem').validate(input);const undo=femUndo.get(m.id)||[];undo.push(structuredClone(m.input));if(undo.length>20)undo.shift();femUndo.set(m.id,undo);m.input=input;inputErrors.delete(m.id);mutate();},undo(){const input=femUndo.get(m.id)?.pop();if(input){m.input=input;mutate();}},canUndo:!!femUndo.get(m.id)?.length,saveView(view){m.modelView=view;save();},onError:toast});
 }
 function setPane(pane){$('#main').dataset.editorPane=pane;paneViews.set(selectedId,pane);for(const button of $('#main').querySelectorAll('[role="tab"]'))button.setAttribute('aria-selected',String(button.dataset.action==='pane-'+pane));if(pane==='results')layoutCurrentBeam();}
-function layoutCurrentBeam(evaluation=null){const m=selected();if(m?.type==='beam')fitBeamFigures(m.input,(evaluation||evaluate(project(),extra())).results.get(m.id));}
+function layoutCurrentBeam(evaluation=null){const m=selected();if(m?.type==='beam')fitBeamFigures(m.input,(evaluation||evaluate(project(),extra())).results.get(m.id));if(m?.type==='beam_biaxial')fitBiaxialFigures(m.input,(evaluation||evaluate(project(),extra())).results.get(m.id));}
 function mutate(){save();render();}
 function showModuleStart(){$('#main').scrollIntoView({block:'start',behavior:'auto'});}
 function download(name,text,type='application/json'){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -209,17 +211,17 @@ document.addEventListener('click',async event=>{
 function applyCad(data,target){if(activeId!==target.projectId||selectedId!==target.moduleId||selected()?.type!=='section')throw Error('当前项目或模块已切换，请重新选择CAD文件');cadSection(data);registry.get('section').validate({...selected().input,shape:'cad',cad:data});selected().input.cad=data;selected().input.shape='cad';mutate();toast('截面轮廓已导入，原 CAD 文件未修改。');}
 const importCad=setupCadImport(applyCad);
 setupBeamEditor({
- getCurrent(){const m=selected();if(m?.type!=='beam')return null;return{id:m.id,input:m.input,q:evaluate(project(),extra()).results.get(m.id)?.q??m.input.q};},
- update(text,live){const m=selected();if(m?.type!=='beam')return;m.input.model=text;inputErrors.delete(m.id);save();
+ getCurrent(){const m=selected();if(!['beam','beam_biaxial'].includes(m?.type))return null;return{id:m.id,input:m.input,q:evaluate(project(),extra()).results.get(m.id)?.q??m.input.q};},
+ update(text,live){const m=selected();if(!['beam','beam_biaxial'].includes(m?.type))return;m.input.model=text;inputErrors.delete(m.id);save();
   if(!live){render();return;}
-  rememberDetails();const evaluation=evaluate(project(),extra()),temp=document.createElement('div');temp.innerHTML=registry.get('beam').render(context(m,evaluation));
+  rememberDetails();const evaluation=evaluate(project(),extra()),temp=document.createElement('div');temp.innerHTML=registry.get(m.type).render(context(m,evaluation));
   const current=$('#main .editor-grid')?.lastElementChild,next=temp.querySelector('.editor-grid')?.lastElementChild;if(current&&next){next.id='module-results';current.replaceWith(next);}
   const nextInputs=temp.querySelector('.editor-grid')?.firstElementChild;
   if(nextInputs){for(const detail of $('#main').querySelectorAll('details[data-ui-key]')){const source=nextInputs.querySelector(`details[data-ui-key="${detail.dataset.uiKey}"]>summary`);if(source&&detail.querySelector('summary'))detail.querySelector('summary').innerHTML=source.innerHTML;}
    for(const el of $('#main').querySelectorAll('[data-beam-field]')){if(el===document.activeElement)continue;const part=el.dataset.posPart,source=nextInputs.querySelector(`[data-beam-field="${el.dataset.beamField}"]${part?'[data-pos-part="'+part+'"]':''}`);if(!source)continue;if(el.tagName==='SELECT')el.innerHTML=source.innerHTML;else if(el.type==='checkbox')el.checked=source.checked;else el.value=source.value;}
   }restoreDetails();renderModules(evaluation);layoutCurrentBeam(evaluation);
  },
- onError(message){if(selected()?.type!=='beam')return;inputErrors.set(selectedId,message);renderModules(evaluate(project(),extra()));const out=$('#main .editor-grid')?.lastElementChild;if(out)out.innerHTML=error('当前模型输入尚未应用，结果待更新：'+message);}
+ onError(message){if(!['beam','beam_biaxial'].includes(selected()?.type))return;inputErrors.set(selectedId,message);renderModules(evaluate(project(),extra()));const out=$('#main .editor-grid')?.lastElementChild;if(out)out.innerHTML=error('当前模型输入尚未应用，结果待更新：'+message);}
 });
 
 const sectionLibrary=setupSectionLibrary({getCurrent(){const m=selected();if(m?.type!=='section')throw Error('请先选择截面模块');return{name:m.name,input:structuredClone(m.input),target:{projectId:activeId,moduleId:m.id}};},apply(item,target){if(activeId!==target.projectId||selectedId!==target.moduleId||selected()?.type!=='section')throw Error('模块已切换，请重新打开截面库');registry.get('section').validate(item.input);registry.get('section').calculate({instance:{input:item.input}});selected().input=structuredClone(item.input);selected().name=item.name;mutate();toast('已载入常用截面，当前模块及其引用已更新。');},changed:render});
@@ -229,7 +231,7 @@ $('#import-file').addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;
   try{
     if(file.size>5_000_000)throw Error('项目文件大于 5 MB');
-    const p=validateProject(JSON.parse(await file.text()));upgradeStabilityProject(p);ensureLegacyWordComparison(p);
+    const p=validateProject(JSON.parse(await file.text()));upgradeStabilityProject(p);ensureLegacyWordComparison(p);ensureBiaxialAngleExample(p);
     const ids=new Map(p.modules.map(m=>[m.id,crypto.randomUUID()]));
     for(const m of p.modules){m.id=ids.get(m.id);for(const key of Object.keys(m.input).filter(k=>k.endsWith('Id')))if(m.input[key]&&ids.has(m.input[key]))m.input[key]=ids.get(m.input[key]);}
     p.id=crypto.randomUUID();p.name+='（导入）';store.projects.push(p);activeId=p.id;selectedId=p.modules[0]?.id;undoModule=null;mutate();restoreRuns();toast('已导入为独立项目。');
@@ -287,3 +289,5 @@ restoreRuns();
 
 for(const d of document.querySelectorAll('dialog'))d.addEventListener('click',e=>{if(e.target===d){const box=d.getBoundingClientRect();if(e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom)d.close();}});
 window.addEventListener('beforeunload',()=>{if(store.projects.length)save();});
+
+document.addEventListener('toggle',event=>{if(selected()?.type==='beam_biaxial'&&event.target.closest?.('#module-results'))requestAnimationFrame(()=>layoutCurrentBeam());},true);

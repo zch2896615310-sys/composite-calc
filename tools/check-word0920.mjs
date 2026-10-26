@@ -14,9 +14,9 @@ const near=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<tol*Math.max(1,Math.abs(b)),`
 vm.runInThisContext(fs.readFileSync(new URL('../structural-v1/engines/beam-source.js',import.meta.url),'utf8'));
 const fresh=()=>validateProject(instantiateExample(bundle));
 const byType=(p,t)=>p.modules.find(m=>m.type===t);
-test('19-module Word example is separate, fully evaluable, round-trippable and remaps every reference',()=>{
+test('20-module Word example is separate, fully evaluable, round-trippable and remaps every reference',()=>{
  const p=fresh(),q=fresh(),ids=new Set(p.modules.map(m=>m.id));
- assert.equal(p.modules.length,19);assert.ok(!byType(p,'fem'));assert.notEqual(p.id,q.id);
+ assert.equal(p.modules.length,20);assert.ok(!byType(p,'fem'));assert.notEqual(p.id,q.id);
  for(const m of p.modules){assert.ok(!q.modules.some(n=>m.id===n.id));for(const[k,v]of Object.entries(m.input))if(k.endsWith('Id')&&v)assert.ok(ids.has(v),k);}
  assert.equal(evaluate(p).errors.size,0);assert.equal(evaluate(validateProject(JSON.parse(JSON.stringify(p)))).errors.size,0);assert.equal(JSON.stringify(bundle),snapshot);
 });

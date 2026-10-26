@@ -9,8 +9,9 @@ import originalComparison from './modules/original-comparison.mjs?v=2';
 import {connectionModules} from './modules/connection-checks.mjs';
 import stability2025 from './modules/stability-2025.mjs';
 import stabilityLegacy2020 from './modules/stability-legacy2020.mjs';
+import beamBiaxial from './modules/beam-biaxial.mjs';
 import wordComparison from './modules/word0920-comparison.mjs';
-export const registry=new Map([loads,section,beam,fem,shell,check,originalComparison,wordComparison,stability2025,stabilityLegacy2020,...worksheetModules,...connectionModules].map(m=>[m.type,m]));
+export const registry=new Map([loads,section,beam,beamBiaxial,fem,shell,check,originalComparison,wordComparison,stability2025,stabilityLegacy2020,...worksheetModules,...connectionModules].map(m=>[m.type,m]));
 export const newProject=(name='未命名计算项目')=>({schemaVersion:1,id:crypto.randomUUID(),name,modules:[]});
 export function addModule(project,type,context){
   const definition=registry.get(type);if(!definition)throw Error('模块类型未注册');

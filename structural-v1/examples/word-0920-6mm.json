@@ -4484,6 +4484,46 @@
         }
       },
       {
+        "id": "c9acb56a-86a1-425e-aabb-7c7a9f88c46c",
+        "type": "beam_biaxial",
+        "version": 1,
+        "name": "横向角钢梁 · 双向耦合与扭转",
+        "input": {
+          "sectionId": "9bbac55c-6ac1-435c-9504-96a0c9b04dd0",
+          "loadId": "",
+          "loadField": "qELine",
+          "E": 206000,
+          "Ix": 1625800,
+          "Iy": 1625800,
+          "Ixy": 0,
+          "q": 0,
+          "P": 1,
+          "ratio": 250,
+          "ratioX": 250,
+          "model": "横梁连续梁\n段长 = 1525,1300,1300mm\n支点 = N0,N1,N2,N3\n均布 = 无\n集中 = 875,0.1\n集中 = 2175,0.1\n集中 = 3475,0.1\n传力支点 = 全部\n悬挑系数 = 2\n自重 = 不计\n自重系数 = 1.2",
+          "rotation": 0,
+          "xSupportMode": "same",
+          "xSupports": "N0,N2",
+          "fixedYRotations": "",
+          "fixedXRotations": "",
+          "pointsX": [],
+          "udlX": [],
+          "torsionMode": "pending",
+          "Jmode": "manual",
+          "J": 0,
+          "nu": 0.3,
+          "eX": 0,
+          "eY": 0,
+          "twistSupports": "N0",
+          "torsionBasis": "",
+          "boundaryBasis": "已知条件：仅支点处连接，跨中没有连续约束。参考计算暂按四支点均限制X/Y平移、弯曲转角自由；实际安装朝向与限扭条件待核定。",
+          "boundaryConfirmed": "no",
+          "boundaryKey": "",
+          "noTorqueKey": "",
+          "basisNote": "同一跨段及0.1kN×3水平荷载的双向耦合参考模型；荷载按Y向输入，X向无外荷载，保留Ixy。仅支点处连接，跨中无连续约束。α=0为参考安装方向，未核定实际限扭。原单向模型保留作对照，不能将两套结果混用。"
+        }
+      },
+      {
         "id": "3a48ee11-2522-42ca-8b50-4cb83d0ed221",
         "type": "anchor_test",
         "version": 1,
@@ -4532,6 +4572,7 @@
         "本文件没有给出板有限元网格、材料完整模型和边界条件，因此本示例不虚构板有限元结果；示例1的第二份Mathcad有限元分析仍可单独使用。"
       ]
     },
-    "legacyStability2020Added": true
+    "legacyStability2020Added": true,
+    "biaxialAngleAdded": true
   }
 }

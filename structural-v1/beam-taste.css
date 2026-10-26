@@ -1,13 +1,13 @@
 /* Stonecalc's existing visual language, refined for the beam workspace.
    Values/solver diagrams remain real engineering content. No UI framework. */
-main[data-module-type="beam"]{
+:is(main[data-module-type="beam"],main[data-module-type="beam_biaxial"]){
  --beam-ink:#263b50;--beam-muted:#5e7185;--beam-blue:#2864a1;
  --beam-line:#e3e9ef;--beam-soft:#f5f8fb;--beam-radius:10px;
  font-family:"Segoe UI Variable","Segoe UI","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
 }
-main[data-module-type="beam"] .page-head{margin-bottom:22px}
-main[data-module-type="beam"] .module-heading .title-input{font-size:26px!important;letter-spacing:-.6px;color:#21374c}
-main[data-module-type="beam"] .page-head p{font-size:12px;color:var(--beam-muted)}
+:is(main[data-module-type="beam"],main[data-module-type="beam_biaxial"]) .page-head{margin-bottom:22px}
+:is(main[data-module-type="beam"],main[data-module-type="beam_biaxial"]) .module-heading .title-input{font-size:26px!important;letter-spacing:-.6px;color:#21374c}
+:is(main[data-module-type="beam"],main[data-module-type="beam_biaxial"]) .page-head p{font-size:12px;color:var(--beam-muted)}
 .beam-workspace{grid-template-columns:minmax(0,1fr);gap:24px}
 .beam-workspace .panel{border-color:var(--beam-line);border-radius:var(--beam-radius);box-shadow:0 2px 5px #253d5403}
 .beam-workspace .panel-head{padding:17px 20px;background:#fff;border-color:var(--beam-line)}
