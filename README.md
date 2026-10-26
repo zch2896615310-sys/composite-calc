@@ -4,7 +4,7 @@ Structural calculation tools for composite materials, stone steel frames, and ce
 
 ## Included Tools
 
-**结构计算模块板V1** (`structural-v1/`) is available from the featured homepage card. The public client supports browser-side section, continuous-beam, load and member calculations, project files and HTML reports. Online FEM, DWG conversion and Word/PDF exports require configured backend services; see [`structural-v1/README.md`](structural-v1/README.md).
+**结构计算模块板V1** (`structural-v1/`) is available from the featured homepage card. It supports browser-side section, continuous-beam, load and member calculations, plus online CalculiX FEM recomputation and Word/PDF exports through Netlify Functions. The calculation example loads the second calculation book with its original acceleration of 1 mm/s². DWG conversion remains separate; DXF and contour JSON work directly in the browser. See [`structural-v1/README.md`](structural-v1/README.md) and [`backend/README.md`](backend/README.md).
 
 This repository contains the following calculation modules:
 
