@@ -4,13 +4,13 @@ import {loadSecondBook,loadWord0920,instantiateExample,restoreExampleResults} fr
 import {upgradeStabilityProject} from './modules/stability-2025.mjs';
 import {ensureLegacyWordComparison} from './engines/stability-legacy2020.mjs';
 import {ensureBiaxialAngleExample} from './engines/beam-biaxial.mjs';
-import {fitBiaxialFigures} from './modules/beam-biaxial.mjs';
+import {fitBiaxialFigures} from './modules/beam-biaxial.mjs?structured-inputs=1';
 import {analysisFor,checksFor,analysisNav,analysisChoices,analysisChecks,isAnalysis,createAnalysisCheck} from './fem-workspace.mjs?calculix-checks=19';
 import {setupBeamCurveHover} from './beam-curve.mjs?calculix-checks=19';
 import {fitBeamFigures} from './modules/beam.mjs?report-red=1';
 import {setupBeamEditor} from './beam-editor.mjs?report-wide=2';
-import {registry,newProject,addModule,validateProject,evaluate} from './model.mjs?calculix-checks=25';
-import {inputKey} from './modules/fem.mjs?calculix-checks=19';
+import {registry,newProject,addModule,validateProject,evaluate} from './model.mjs?calculix-checks=26';
+import {inputKey} from './modules/fem.mjs?structured-inputs=1';
 import {esc,error} from './ui.mjs?calculix-checks=19';
 import {cadSection,parseDXF} from './engines/cad.mjs';
 import {reportPayload} from './report-export.mjs?report-red=1';
@@ -104,14 +104,14 @@ function setPath(root,path,value){const parts=path.split('.');let obj=root;for(c
 // column while typing so the focused form and selection remain intact.
 document.addEventListener('input',event=>{
   const el=event.target;
-  if(!el.dataset.path||!selected()||el.tagName==='SELECT')return;
+  if(!el.dataset.path||!selected()||el.tagName==='SELECT'||el.type==='checkbox')return;
   try{
     let value=el.value;
     if(el.hasAttribute('data-number')){if(!value.trim()||!Number.isFinite(Number(value)))throw Error('输入尚不完整');value=Number(value);}
     if(el.hasAttribute('data-array')){const a=value.split(/[,，]/);if(a.some(v=>!v.trim()||!Number.isFinite(Number(v))))throw Error('输入尚不完整');value=a.map(Number);}
     if(el.hasAttribute('data-json'))value=JSON.parse(value);
     if(el.hasAttribute('data-rects'))value=value.trim().split(/\n/).map(line=>{const a=line.split(/[,，]/).map(v=>v.trim());if(a.length!==5||a.some(v=>!v||!Number.isFinite(Number(v))))throw Error('每行需要五个数值');const [x,y,b,h,E]=a.map(Number);return{x,y,b,h,E};});
-    const draft=structuredClone(selected());setPath(draft,el.dataset.path,value);registry.get(draft.type).validate(draft.input);Object.assign(selected(),draft);inputErrors.delete(selectedId);save();el.removeAttribute('aria-invalid');
+    const draft=structuredClone(selected());if(!registry.get(draft.type).changeInput?.(draft.input,el.dataset.path,value))setPath(draft,el.dataset.path,value);registry.get(draft.type).validate(draft.input);Object.assign(selected(),draft);inputErrors.delete(selectedId);save();el.removeAttribute('aria-invalid');
     rememberDetails();const evaluation=evaluate(project(),extra()),temp=document.createElement('div');temp.innerHTML=registry.get(draft.type).render(context(selected(),evaluation));
     const current=$('#main .editor-grid')?.lastElementChild,next=temp.querySelector('.editor-grid')?.lastElementChild;
     if(current&&next){next.id='module-results';current.replaceWith(next);}if(draft.type==='fem'){const old=$('#main .fem-model-editor'),preview=temp.querySelector('.fem-model-editor');if(old&&preview){old.replaceWith(preview);mountFemEditor(evaluation);}}restoreDetails();renderModules(evaluation);layoutCurrentBeam(evaluation);
@@ -124,7 +124,7 @@ document.addEventListener('change',event=>{
     if(el.id==='projects'){activeId=el.value;selectedId=project().modules[0]?.id;undoModule=null;mutate();restoreRuns();return;}
     if(el.id==='project-name'){project().name=el.value.trim()||'未命名计算项目';mutate();return;}
     if(!el.dataset.path||!selected())return;
-    let value=el.value;
+    let value=el.hasAttribute('data-boolean')?el.checked:el.value;
     if(el.hasAttribute('data-number')){if(!value.trim()||!Number.isFinite(Number(value)))throw Error('请输入有效数值');value=Number(value);}
     if(el.hasAttribute('data-array')){const parts=value.split(/[,，]/);if(parts.some(v=>!v.trim()||!Number.isFinite(Number(v))))throw Error('请输入逗号分隔的有效数值');value=parts.map(Number);}
     if(el.hasAttribute('data-json'))value=JSON.parse(value);

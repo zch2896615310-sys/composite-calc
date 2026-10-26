@@ -1,6 +1,6 @@
-import section from './modules/section.mjs?section-modulus=1';
+import section from './modules/section.mjs?structured-inputs=1';
 import beam from './modules/beam.mjs?report-red=1';
-import fem from './modules/fem.mjs?calculix-checks=19';
+import fem from './modules/fem.mjs?structured-inputs=1';
 import loads from './modules/loads.mjs?calculix-checks=19';
 import check from './modules/check.mjs?report-red=1';
 import shell from './modules/shell.mjs?calculix-checks=19';
@@ -9,7 +9,7 @@ import originalComparison from './modules/original-comparison.mjs?v=2';
 import {connectionModules} from './modules/connection-checks.mjs';
 import stability2025 from './modules/stability-2025.mjs';
 import stabilityLegacy2020 from './modules/stability-legacy2020.mjs';
-import beamBiaxial from './modules/beam-biaxial.mjs';
+import beamBiaxial from './modules/beam-biaxial.mjs?structured-inputs=1';
 import wordComparison from './modules/word0920-comparison.mjs';
 export const registry=new Map([loads,section,beam,beamBiaxial,fem,shell,check,originalComparison,wordComparison,stability2025,stabilityLegacy2020,...worksheetModules,...connectionModules].map(m=>[m.type,m]));
 export const newProject=(name='未命名计算项目')=>({schemaVersion:1,id:crypto.randomUUID(),name,modules:[]});

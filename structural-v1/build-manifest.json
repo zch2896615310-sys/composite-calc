@@ -43,6 +43,7 @@
     "section-library-model.mjs",
     "section-library.mjs",
     "shell-contour.mjs",
+    "structured-inputs.mjs",
     "style.css",
     "ui-state.mjs",
     "ui.mjs",

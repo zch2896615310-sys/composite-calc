@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>结构计算模块板V1 · 结构计算工具箱</title><link rel="stylesheet" href="style.css?report-red=1"><link rel="stylesheet" href="beam-taste.css?v=9"><link rel="stylesheet" href="fem-editor.css?v=7"><link rel="stylesheet" href="workbench-design.css?v=5"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>结构计算模块板V1 · 结构计算工具箱</title><link rel="stylesheet" href="style.css?report-red=1"><link rel="stylesheet" href="beam-taste.css?v=9"><link rel="stylesheet" href="fem-editor.css?v=7"><link rel="stylesheet" href="workbench-design.css?structured-inputs=1"></head>
 <body>
   <a class="skip-link" href="#main">跳到计算内容</a>
   <header class="topbar"><a class="brand" href="../" title="返回结构计算工具箱">SC<span>STONECALC<small>结构计算模块板V1</small></span></a><div class="top-actions"><span id="save-state" role="status">本地自动保存</span><button data-action="import">导入项目</button><button data-action="export">导出项目</button><button class="primary" data-action="report">生成计算书</button></div></header>
@@ -17,5 +17,5 @@
   <dialog id="section-save"><div class="dialog-head"><h2>保存为常用截面</h2><button id="section-save-close" aria-label="关闭保存截面">×</button></div><form><label class="field"><span>常用截面名称</span><input id="section-save-name" maxlength="80" required placeholder="例如：主龙骨矩形钢管"></label><p id="section-save-status" class="hint" role="status"></p><button class="primary" type="submit">保存截面</button></form></dialog>
   <dialog id="section-library"><div class="dialog-head"><h2>常用截面库</h2><button id="section-library-close" aria-label="关闭常用截面库">×</button></div><div class="section-library-toolbar"><input id="section-library-search" aria-label="搜索常用截面" placeholder="按自定义名称搜索"><button data-lib-action="import">导入截面库</button><button data-lib-action="export">导出截面库</button></div><p id="section-library-status" class="hint" role="status"></p><div id="section-library-list"></div><div id="section-library-archive"></div><input type="file" id="section-library-file" accept=".json" hidden></dialog>
   <div id="toast" role="status"></div><button id="undo-empty" data-action="undo" hidden>撤销移除</button>
-  <script src="engines/beam-source.js"></script><script type="module" src="app.mjs?biaxial-beam=20261026-v1"></script>
+  <script src="engines/beam-source.js"></script><script type="module" src="app.mjs?structured-inputs=20261026-v1"></script>
 </body></html>
