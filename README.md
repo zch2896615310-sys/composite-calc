@@ -4,6 +4,8 @@ Structural calculation tools for composite materials, stone steel frames, and ce
 
 ## Included Tools
 
+**结构计算模块板V1** (`structural-v1/`) is available from the featured homepage card. The public client supports browser-side section, continuous-beam, load and member calculations, project files and HTML reports. Online FEM, DWG conversion and Word/PDF exports require configured backend services; see [`structural-v1/README.md`](structural-v1/README.md).
+
 This repository contains the following calculation modules:
 
 1.  **Composite Material Stress Calculation** (`复合材料应力分配计算3.8.html`)
