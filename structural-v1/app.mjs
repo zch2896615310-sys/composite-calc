@@ -185,7 +185,7 @@ document.addEventListener('click',async event=>{
     if(action==='report'){
       const p=project(),evaluation=evaluate(p,extra());
       reportHTML=`<h1>${esc(p.name)}</h1><p>结构计算汇总 · ${new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'})}（北京时间）</p><p>章节按照项目模块顺序生成。每个模块附当前输入，计算假定和未计算状态单独列明。</p>${p.modules.length?p.modules.map((m,i)=>`<section class="report-section"><h2>${i+1}. ${esc(m.name)}</h2>${registry.get(m.type).report(context(m,evaluation))}<details><summary>当前输入快照</summary><pre>${esc(JSON.stringify(m.type==='loads'?loadReportInput(m.input):m.input,null,2))}</pre></details></section>`).join(''):'<p>项目还没有计算模块。</p>'}`;
-      if(p.reportInfo){const states=p.modules.map(m=>[m.name,evaluation.results.get(m.id)?.state]).filter(([,s])=>s);reportHTML=reportHTML.replace('</h1>','</h1>'+p.reportInfo.paragraphs.map(t=>`<p>${esc(t)}</p>`).join('')+`<h2>项目校核状态</h2>`+states.map(([n,s])=>`<p>${esc(n)}：${esc(s)}</p>`).join(''));}
+      if(p.reportInfo){const states=p.modules.map(m=>[m.name,evaluation.results.get(m.id)?.state]).filter(([,s])=>s);reportHTML=reportHTML.replace('</h1>','</h1>'+p.reportInfo.paragraphs.map(t=>t.startsWith('公开示例载入此前')?'公开示例初始载入已验证结果快照；载入本身不触发在线求解。修改模型后请运行在线有限元，并使用与当前输入匹配的结果生成计算书。':t).map(t=>`<p>${esc(t)}</p>`).join('')+`<h2>项目校核状态</h2>`+states.map(([n,s])=>`<p>${esc(n)}：${esc(s)}</p>`).join(''));}
       $('#report-body').innerHTML=reportHTML;markReportFailures($('#report-body'));reportHTML=$('#report-body').innerHTML;$('#report').showModal();return;
     }
     if(action==='download-report'){const style=await fetch('style.css?report-red=1').then(r=>r.text());download(safeName(project().name)+'-计算汇总.html',`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>${esc(project().name)}</title><style>${style}\nbody{background:#fff;max-width:1000px;margin:40px auto;padding:25px}details{display:block}details>pre{display:block}h1{font-size:28px}</style>${reportHTML}</html>`,'text/html');return;}
@@ -276,7 +276,7 @@ new ResizeObserver(()=>layoutCurrentBeam()).observe($('#main'));
 render();
 try{
   const response=await fetch(serviceURL('solver','/api/default-fem'));if(!response.ok)throw Error();defaultFem=await response.json();defaultFem.loads.y_acceleration=3923;
-  $('#service-status').textContent='在线有限元服务已连接 · CalculiX';restoreRuns();
+  $('#service-status').textContent='在线有限元服务已连接 · CalculiX';if(!project().modules.length)render();restoreRuns();
 }catch{$('#service-status').textContent=services.solverBase?'有限元服务连接失败 · 浏览器计算可用':'浏览器计算可用 · 有限元服务待接入';}
 for(const action of ['export-docx','export-pdf'])if(!services.reportBase){const b=document.querySelector(`[data-action="${action}"]`);b.disabled=true;b.title='Word/PDF 在线导出服务待接入，可先下载 HTML';}
 if(!services.reportBase){const note=document.createElement('p');note.className='hint public-export-note';note.textContent='Word/PDF 在线导出服务待接入。当前可预览或下载 HTML 计算书，不满足项以红色标注。';$('#report-body').before(note);}

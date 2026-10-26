@@ -16,6 +16,7 @@ if kind=='fem':
     if cells>limit:raise ValueError('当前在线任务网格过密，请增大网格控制尺寸后重试')
     if payload.get('postprocess')=='layered-shell-v1':
         server.layered_api.validate(p,size,server.validate)
+        (folder/'input.json').write_text(json.dumps(payload,ensure_ascii=False),encoding='utf-8')
         # Preserve the exact submitted snapshot and existing precision kernel.
         from projected_shell_kernel import build,write
         from layered_shell_worker import summarize

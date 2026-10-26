@@ -50,5 +50,5 @@ export async function reportPayload(project,evaluation,context){
  }
  const findings=project.modules.filter(m=>!['shell','fem'].includes(m.type)).map(m=>({name:m.name,result:evaluation.results.get(m.id),error:evaluation.errors.get(m.id)}));
  const states=findings.filter(m=>m.result?.state||m.error).map(m=>{const text=`${m.name}：${m.error?'未计算，'+m.error:m.result.state}`;return{text,fail:isFailureText(text)};});
- return{title:project.name,sections,projectSnapshot:project,introduction:project.reportInfo?.paragraphs||[],overall:states};
+ return{title:project.name,sections,projectSnapshot:project,introduction:(project.reportInfo?.paragraphs||[]).map(t=>t.startsWith('公开示例载入此前')?'公开示例初始载入已验证结果快照；载入本身不触发在线求解。修改模型后请运行在线有限元，并使用与当前输入匹配的结果生成计算书。':t),overall:states};
 }

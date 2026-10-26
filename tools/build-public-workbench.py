@@ -63,6 +63,8 @@ def public_app(text):
   for(const m of p.modules)if(m.type==='fem'&&m.lastRun&&!femResults.has(m.id))poll(m);
 }""")
     text = replace(text, "fetch('/api/default-fem')", "fetch(serviceURL('solver','/api/default-fem'))")
+    text = replace(text, "  $('#service-status').textContent='本地服务已连接 · V2 CalculiX · 不调用SAP';restoreRuns();", "  $('#service-status').textContent='本地服务已连接 · V2 CalculiX · 不调用SAP';if(!project().modules.length)render();restoreRuns();")
+    text = replace(text, 'p.reportInfo.paragraphs.map(t=>', "p.reportInfo.paragraphs.map(t=>t.startsWith('公开示例载入此前')?'公开示例初始载入已验证结果快照；载入本身不触发在线求解。修改模型后请运行在线有限元，并使用与当前输入匹配的结果生成计算书。':t).map(t=>")
     text = text.replace('本地有限元服务尚未连接，请运行“启动工作台.cmd”。', '有限元在线服务待接入。')
     text = text.replace('本地服务已连接 · V2 CalculiX · 不调用SAP', '在线有限元服务已连接 · CalculiX')
     text = text.replace('已加入本地计算队列', '已加入计算队列')
@@ -114,6 +116,8 @@ def transform(name, text):
         text = text.replace('本地实体或分层壳独立求解', '实体或分层壳独立求解')
     if name == 'layered-results.mjs':
         text = text.replace('变更参数后的结果由本机独立计算', '变更参数后须连接在线有限元服务重新计算')
+    if name == 'report-export.mjs':
+        text = replace(text, 'introduction:project.reportInfo?.paragraphs||[]', "introduction:(project.reportInfo?.paragraphs||[]).map(t=>t.startsWith('公开示例载入此前')?'公开示例初始载入已验证结果快照；载入本身不触发在线求解。修改模型后请运行在线有限元，并使用与当前输入匹配的结果生成计算书。':t)")
     return text.replace('当前 C塔壳模板', '当前旧壳模板')
 
 
@@ -132,7 +136,7 @@ def second_book_example(source):
     # The selected engineering example is authorized for publishing; local
     # filesystem locations are not part of that example's engineering input.
     project['reportInfo']['source'] = PureWindowsPath(project['reportInfo']['source']).name
-    project['reportInfo']['paragraphs'].insert(0, '公开示例载入此前独立求解并验证的原值1结果快照，不代表本次在线重新求解。模型参数变更后原结果失效，须接入在线有限元服务重算。')
+    project['reportInfo']['paragraphs'].insert(0, '公开示例初始载入已验证结果快照；载入本身不触发在线求解。修改模型后请运行在线有限元，并使用与当前输入匹配的结果生成计算书。')
     for module in project['modules']:
         if module['type'] == 'section' and module['input'].get('cad'):
             module['input']['cad']['source'] = PureWindowsPath(module['input']['cad']['source']).name
