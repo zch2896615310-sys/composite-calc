@@ -3,7 +3,6 @@ import {positive,finite} from '../engines/section.mjs';
 
 const specs={
  hanger_demand:{title:'挂件荷载与试验需求',symbol:'↧',description:'按抗水平挂件及承重挂件分别分配荷载，记录拉剪试验数据。',refs:[['荷载来源','loadId','loads']],params:[['面板宽度','B',1300,'mm'],['面板高度','H',2970,'mm'],['水平承力挂件数','nHorizontal',8,'个'],['竖向承重挂件数','nVertical',2,'个'],['手动地震设计面荷载','qE',.1344,'kN/m²'],['手动重力设计面荷载','gd',.312,'kN/m²'],['试验抗拉值（0为未提供）','testedN',0,'kN'],['试验抗剪值（0为未提供）','testedV',0,'kN']],basis:'N=qE·B·H/(10⁶nH)，V=Gd·B·H/(10⁶nV)；B、H以mm输入，输出kN。引用荷载时只取其设计面荷载，尺寸及挂件数由本模块明确输入。挂件材质或厚度不能代替拉剪试验；未提供实测值及报告编号时只列需求。'},
- member_stability:{title:'压弯构件稳定性',symbol:'λ',description:'计算长细比、正则化长细比、欧拉临界力及原书平面内外稳定表达式。',refs:[['轴力荷载来源','loadId','loads'],['弯矩来源','beamId','beam'],['截面来源','sectionId','section']],params:[['手动压轴力 N','N',1.2,'kN'],['手动弯矩 M','M',.01,'kN·m'],['荷载分格宽度','B',1300,'mm'],['轴力计算高度','H',2970,'mm'],['面积 A','A',189.17,'mm²'],['截面模量 Wx','W',904.09,'mm³'],['回转半径 ix','ix',8.818,'mm'],['回转半径 iy','iy',12.552,'mm'],['x向计算长度','lx',900,'mm'],['y向计算长度','ly',900,'mm'],['弹性模量 E','E',206000,'MPa'],['屈服强度 fy','fy',235,'MPa'],['强度设计值 f','f',215,'MPa'],['稳定系数 φx','phiX',.82,''],['稳定系数 φy','phiY',.91,''],['受弯整体稳定系数 φb','phiB',.95,''],['等效弯矩系数 βmx','betaMx',.85,''],['等效弯矩系数 βtx','betaTx',.85,''],['人工采用欧拉临界力','NEx',33.2,'kN']],basis:'φx、φy、φb、βmx、βtx 均由输入指定，不按长细比自动查表。公式中的N、M先换算为N及N·mm，尺寸mm、强度MPa。所列判断仅对应下方表达式与输入系数。原书标注“GB 50018—2020”及其系数原样记录，不自动替换为其他版本或据此宣布整项规范校核完成。'},
  bracket_strength:{title:'偏心角码强度',symbol:'∟',description:'分配单个连接件拉剪力，按偏心距计算弯矩及净截面正应力、剪应力。',refs:[['重力荷载来源','loadId','loads'],['水平支座反力来源','beamId','beam'],['净截面来源','sectionId','section']],params:[['手动总竖向力 G','G',1.2,'kN'],['手动总水平力 F','F',.2,'kN'],['共同承力连接件数','n',2,'个'],['偏心距 e','e',60,'mm'],['荷载分格宽度','B',1300,'mm'],['重力计算高度','H',2970,'mm'],['净面积 A','A',102.5,'mm²'],['净截面模量 Wx','W',1035.59,'mm³'],['发展系数 γ','gamma',1.05,''],['正应力设计值 f','f',215,'MPa'],['剪应力设计值 fv','fv',125,'MPa']],basis:'V=G/n、N=F/n、M=V·e/1000（kN·m）；σ=|N|/A+|M|/(γW)，τ=|V|/A。引用梁时取最大支点反力，引用荷载时按Gd·B·H取总重力。正应力公式中的内力先换算为N及N·mm。净截面参数须与控制截面一致；本式不包含螺栓孔承压、角码屈曲或墙体承载力。'},
  anchor_test:{title:'锚栓现场拉拔需求',symbol:'↗',description:'由水平反力或人工采用值计算现场拉拔试验最低需求，可记录实测值。',refs:[['水平支座反力来源','beamId','beam']],params:[['人工采用水平力 N','N',.2,'kN'],['锚栓竖向力记录值','vertical',0,'kN'],['拉拔试验倍数','factor',2,''],['拉拔实测值（0为未提供）','tested',0,'kN']],basis:'按原书的限位模型取水平力需求；竖向力单独记录，不自动折算成拉力。拉拔需求=k·|N|。它是现场试验需求，不是锚栓、砌体或混凝土的设计承载力；未提供试验数据时不判为通过。'}
 };
@@ -20,19 +19,6 @@ export function connectionCheck(type,i,refs={}){
   const N=Math.abs(q)*i.B*i.H/1e6/i.nHorizontal,V=Math.abs(g)*i.B*i.H/1e6/i.nVertical;
   pending=!i.reportNo.trim()||i.testedN<=0||i.testedV<=0;
   rows.push(row('单个挂件抗拉需求','|qE|·B·H/(10⁶nH)',N,'kN',pending?null:i.testedN),row('单个承重挂件抗剪需求','|Gd|·B·H/(10⁶nV)',V,'kN',pending?null:i.testedV));Object.assign(derived,{qE:q,gd:g,N,V});
- }else if(type==='member_stability'){
-  let N=i.N*1000,M=i.M*1e6,A=i.A,W=i.W,ix=i.ix,iy=i.iy,E=i.E;
-  if(refs.loads)N=refs.loads.gd*i.B*i.H/1000;
-  if(refs.beam)M=refs.beam.M*1e6;
-  if(refs.section){const s=refs.section;sameMaterial(s);A=s.A;W=Math.min(s.WxTop,s.WxBottom);ix=Math.sqrt(s.Ix/A);iy=Math.sqrt(s.Iy/A);E=s.E;}
-  for(const[k,v]of Object.entries({A,W,ix,iy,E,fy:i.fy,f:i.f,lx:i.lx,ly:i.ly,phiX:i.phiX,phiY:i.phiY,phiB:i.phiB,betaMx:i.betaMx,betaTx:i.betaTx}))positive(v,k);
-  if(N<0)throw Error('压弯稳定性中的压轴力须为非负数');
-  if([i.phiX,i.phiY,i.phiB].some(v=>v>1))throw Error('稳定系数须在0到1之间');
-  const lx=i.lx/ix,ly=i.ly/iy,normalizedX=lx/Math.PI*Math.sqrt(i.fy/E),normalizedY=ly/Math.PI*Math.sqrt(i.fy/E),critical=Math.PI**2*E*A/(1.1*lx**2),used=i.criticalMode==='manual'?i.NEx*1000:critical;
-  positive(used,'采用欧拉临界力');const denominator=1-.8*N/used;
-  if(denominator<=0)throw Error('1−0.8N/NEx≤0，不能继续采用本稳定表达式');
-  const axialX=N/(i.phiX*A*i.f),bendingX=i.betaMx*Math.abs(M)/(W*i.f*denominator),axialY=N/(i.phiY*A*i.f),bendingY=i.betaTx*Math.abs(M)/(i.phiB*W*i.f);
-  rows.push(row('x向长细比','lx/ix',lx,''),row('y向长细比','ly/iy',ly,''),row('x向正则化长细比','λx/π·sqrt(fy/E)',normalizedX,''),row('y向正则化长细比','λy/π·sqrt(fy/E)',normalizedY,''),row('欧拉临界力公式复算','π²EA/(1.1λx²)',critical/1000,'kN'),row('实际采用欧拉临界力','NEx',used/1000,'kN',null,i.criticalMode==='manual'?'采用原书/人工临界力':'采用公式复算临界力'),row('平面内稳定利用率','N/(φxAf)+βmx|M|/[Wf(1−0.8N/NEx)]',axialX+bendingX,'',1,`轴力项=${fmt(axialX,9)}；弯矩项=${fmt(bendingX,9)}；分母修正=${fmt(denominator,9)}`),row('平面外稳定利用率','N/(φyAf)+βtx|M|/(φbWf)',axialY+bendingY,'',1,`轴力项=${fmt(axialY,9)}；弯矩项=${fmt(bendingY,9)}`));Object.assign(derived,{N,M,A,W,ix,iy,E,lx,ly,normalizedX,normalizedY,critical,used,denominator});
  }else if(type==='bracket_strength'){
   for(const k of ['n','gamma','f','fv'])positive(i[k],k);if(!Number.isInteger(i.n))throw Error('共同承力连接件数量须为整数');
   finite(i.e,'偏心距');let G=refs.loads?refs.loads.gd*i.B*i.H/1e6:i.G,F=refs.beam?refs.beam.R:i.F,A=i.A,W=i.W;

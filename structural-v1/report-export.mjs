@@ -18,7 +18,7 @@ export async function reportPayload(project,evaluation,context){
  for(const instance of project.modules){
   const ctx=context(instance,evaluation),container=document.createElement('div');container.innerHTML=registry.get(instance.type).report(ctx);markReportFailures(container);
   const blocks=[];
-  async function walk(node){for(const child of node.children){const tag=child.tagName.toLowerCase();if(tag==='table'){const trs=[...child.querySelectorAll('tr')];blocks.push({type:'table',rows:trs.map(tr=>[...tr.querySelectorAll('th,td')].map(text)),failedCells:trs.map(tr=>[...tr.querySelectorAll('th,td')].map(c=>c.classList.contains('report-fail')))});}else if(tag==='svg'){blocks.push(await raster(child));}else if(['p','h1','h2','h3'].includes(tag)||child.classList.contains('result-notice')){if(text(child))blocks.push({type:tag.startsWith('h')?'subheading':'paragraph',text:text(child),fail:child.classList.contains('report-fail')});}else await walk(child);}}
+  async function walk(node){for(const child of node.children){const tag=child.tagName.toLowerCase();if(tag==='table'){const trs=[...child.querySelectorAll('tr')];blocks.push({type:'table',rows:trs.map(tr=>[...tr.querySelectorAll('th,td')].map(text)),failedCells:trs.map(tr=>[...tr.querySelectorAll('th,td')].map(c=>c.classList.contains('report-fail')))});}else if(tag==='svg'){blocks.push(await raster(child));}else if(['p','h1','h2','h3','li'].includes(tag)||child.classList.contains('result-notice')){if(text(child))blocks.push({type:tag.startsWith('h')?'subheading':'paragraph',text:(tag==='li'?'• ':'')+text(child),fail:child.classList.contains('report-fail')});}else await walk(child);}}
   await walk(container);
   let formulas=[];if(instance.type==='loads'&&ctx.result)formulas=loadFormulaRows(ctx.result,materialKind(instance.input)==='stone',instance.input).map(v=>v.row[1]);if(instance.type==='check'&&ctx.result)formulas=ctx.result.rows.map(r=>r[1]);if(instance.type==='section')formulas=['A = ∑Ai','yc = ∑(Ei Ai yi) / ∑(Ei Ai)','EIx = ∑Ei (Ixi + Ai (yi − yc)²)'];if(instance.type==='beam')formulas=['EI d⁴v/dx⁴ = q(x)','M(x) = −EI d²v/dx²','V(x) = dM(x) / dx'];
   const input=instance.type==='loads'?loadReportInput(instance.input):instance.input;const inputRows=[];
@@ -65,6 +65,7 @@ export async function reportPayload(project,evaluation,context){
   if(instance.type==='member_stability'){const row=inputRows.find(r=>r[0]===labels.criticalMode);if(row)row[1]=input.criticalMode==='manual'?'人工采用值':'按公式复算';}
   if(instance.type==='bracket_strength'){const row=inputRows.find(r=>r[0]===labels.n);if(row)row[0]='共同承力连接件数';}
   if(instance.type==='bonding')formulas=[`Fpeel ≥ ${input.peelLimit} N·mm/mm`,`fpull ≥ ${input.pullLimit} MPa`];
+  if(instance.type==='member_stability'){formulas=ctx.result?.reportFormulas||[];const active=registry.get(instance.type).reportInputs?.(ctx);if(active)inputRows.splice(0,inputRows.length,...active);}
   sections.push({title:instance.name.replace(/^第[一二三四五六七八九十0-9]+节\s*/,''),type:instance.type,formulas,blocks,inputRows});
  }
  const findings=project.modules.filter(m=>!['shell','fem'].includes(m.type)).map(m=>({name:m.name,result:evaluation.results.get(m.id),error:evaluation.errors.get(m.id)}));

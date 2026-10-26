@@ -1,6 +1,7 @@
 import {services,serviceURL,reportDownloadURL} from './public-runtime.mjs';
 import {onlineReport} from './online-report.mjs';
 import {loadSecondBook,loadWord0920,instantiateExample,restoreExampleResults} from './example-project.mjs';
+import {upgradeStabilityProject} from './modules/stability-2025.mjs';
 import {analysisFor,checksFor,analysisNav,analysisChoices,analysisChecks,isAnalysis,createAnalysisCheck} from './fem-workspace.mjs?calculix-checks=19';
 import {setupBeamCurveHover} from './beam-curve.mjs?calculix-checks=19';
 import {fitBeamFigures} from './modules/beam.mjs?report-red=1';
@@ -27,6 +28,7 @@ try{
   store=saved?JSON.parse(saved):{projects:[newProject()],activeId:null};
   if(!Array.isArray(store.projects)||!store.projects.length)throw Error('项目列表为空');
   store.projects.forEach(validateProject);
+  if(store.projects.map(upgradeStabilityProject).some(Boolean)){try{localStorage.setItem(KEY,JSON.stringify(store));}catch{recoveryBlocked=true;setTimeout(()=>toast('2025稳定性已在当前会话升级；存储空间不足，自动保存暂停，请导出项目备份。'),500);}}
   activeId=store.projects.some(p=>p.id===store.activeId)?store.activeId:store.projects[0].id;
 }catch(e){
   try{const previous=localStorage.getItem(KEY);if(previous)localStorage.setItem(KEY+'.recovery.'+Date.now(),previous);}catch{recoveryBlocked=true;}
@@ -198,7 +200,7 @@ document.addEventListener('click',async event=>{
     if(action.startsWith('module:')){
       if(action==='module:run'){await runFem(selected());return;}
       if(action==='module:import-cad'){$('#cad-file').click();return;}
-      registry.get(selected().type).action?.({instance:selected()},action.slice(7),Number(button.dataset.index));mutate();return;
+      registry.get(selected().type).action?.(context(selected(),evaluate(project(),extra())),action.slice(7),Number(button.dataset.index));mutate();return;
     }
   }catch(e){toast(e.message);}
 });
@@ -226,9 +228,9 @@ $('#import-file').addEventListener('change',async event=>{
   const file=event.target.files[0];if(!file)return;
   try{
     if(file.size>5_000_000)throw Error('项目文件大于 5 MB');
-    const p=validateProject(JSON.parse(await file.text()));
+    const p=validateProject(JSON.parse(await file.text()));upgradeStabilityProject(p);
     const ids=new Map(p.modules.map(m=>[m.id,crypto.randomUUID()]));
-    for(const m of p.modules){m.id=ids.get(m.id);for(const key of ['sectionId','loadId','beamId','serviceBeamId','femId','analysisId'])if(m.input[key]&&ids.has(m.input[key]))m.input[key]=ids.get(m.input[key]);}
+    for(const m of p.modules){m.id=ids.get(m.id);for(const key of Object.keys(m.input).filter(k=>k.endsWith('Id')))if(m.input[key]&&ids.has(m.input[key]))m.input[key]=ids.get(m.input[key]);}
     p.id=crypto.randomUUID();p.name+='（导入）';store.projects.push(p);activeId=p.id;selectedId=p.modules[0]?.id;undoModule=null;mutate();restoreRuns();toast('已导入为独立项目。');
   }catch(e){toast(`导入失败：${e.message}`);}finally{event.target.value='';}
 });

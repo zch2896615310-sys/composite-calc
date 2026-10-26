@@ -81,9 +81,9 @@ def public_index(text):
     text = text.replace('<small>结构计算工作台</small>', '<small>结构计算模块板V1</small>')
     text = replace(text, '<a class="brand" href="/">', '<a class="brand" href="../" title="返回结构计算工具箱">')
     text = text.replace('项目模板与验证', '计算示例')
-    text = block(text, '<div class="template-list">', '</div></dialog>\n  <dialog id="report">', '<div class="template-list"><div><h3>示例1 · 第二份计算书有限元分析</h3><p>原值1 mm/s²，18格分层壳、28个参考面节点、10个挂点。保留材料、连接、CAD异型立柱、连续梁与原文对照章节。</p><p class="hint">附已验证结果快照；修改参数后可运行在线有限元重新计算，支持Word / PDF导出。</p><button data-action="public-demo">载入第二份计算书 · 原值1</button></div><div><h3>示例2 · C塔6mm Word计算书（0920）</h3><p>18个模块：面板荷载、挂件需求、立柱连续梁及稳定性、偏心角码、横向角钢梁、锚栓拉拔与原书逐项对照。</p><p class="hint">保留原书采用值；算术与建模差异单独列示。挂件和锚栓无试验报告时为待补数据。此书未提供板有限元模型，示例按原梁模型复现。</p><button data-action="word0920-demo">载入0920 Word · 6mm</button></div>')
+    text = block(text, '<div class="template-list">', '</div></dialog>\n  <dialog id="report">', '<div class="template-list"><div><h3>示例1 · 第二份计算书有限元分析</h3><p>原值1 mm/s²，18格分层壳、28个参考面节点、10个挂点。保留材料、连接、CAD异型立柱、连续梁与原文对照章节。</p><p class="hint">附已验证结果快照；修改参数后可运行在线有限元重新计算，支持Word / PDF导出。</p><button data-action="public-demo">载入第二份计算书 · 原值1</button></div><div><h3>示例2 · C塔6mm Word计算书（0920）</h3><p>18个模块：面板荷载、挂件需求、立柱连续梁及2025版稳定性、偏心角码、横向角钢梁、锚栓拉拔与原书逐项对照。</p><p class="hint">保留原书采用值；算术与建模差异单独列示。挂件和锚栓无试验报告时为待补数据。此书未提供板有限元模型，示例按原梁模型复现。</p><button data-action="word0920-demo">载入0920 Word · 6mm</button></div>')
     text = text.replace('连接本地计算服务…', '浏览器计算就绪…').replace('例如：C塔主龙骨32×32', '例如：主龙骨矩形钢管')
-    text = text.replace('app.mjs?report-red=20261026-v1','app.mjs?word-example=20261026-v2')
+    text = text.replace('app.mjs?report-red=20261026-v1','app.mjs?stability-2025=20261026-v1')
     text = text.replace('修改模型后结果失效；重新求解需接入在线有限元服务。','修改模型后结果失效；可在在线有限元服务连接后重新求解。')
     return text
 

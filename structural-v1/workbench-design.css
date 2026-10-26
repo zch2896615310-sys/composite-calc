@@ -85,3 +85,5 @@
 
 @media screen and (min-width:1200px){.connection-workspace{grid-template-columns:minmax(260px,320px) minmax(0,1fr)}}
 @media screen and (max-width:1199px){.connection-workspace{grid-template-columns:minmax(0,1fr)}}
+
+@media screen{.stability-missing{padding:4px 20px 18px;color:#7b5a21;font-size:12px;line-height:1.9}.stability-missing h3{font-size:13px}.stability-missing ul{padding-left:18px}.stability-evidence{padding:10px;border:1px solid #e1e7ef;background:#f8fafc;border-radius:5px}.stability-evidence strong{display:block;color:#705a2e;font-size:11px;font-weight:500;margin:6px 0}.stability-evidence button{font-size:11px;padding:7px 9px}.stability-workspace .advanced-settings{margin:15px 14px}.stability-workspace .panel-body .advanced-settings{margin-left:0;margin-right:0}.stability-workspace .result-notice{line-height:1.8}}
